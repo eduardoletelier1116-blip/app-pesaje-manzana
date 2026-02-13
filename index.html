@@ -26,16 +26,20 @@ td{padding:6px;border-bottom:1px solid #eee}
 
 <!-- LOGIN -->
 <div class="card" id="loginCard">
-<h3>Login Operador</h3>
+<h3>Login</h3>
 <input type="text" id="loginOperador" placeholder="Nombre operador">
+<select id="modo">
+  <option value="operador">Operador</option>
+  <option value="visualizacion">Solo visualización</option>
+</select>
 <button onclick="login()">Ingresar</button>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
 
-<!-- FORMULARIO -->
-<div class="card">
+<!-- FORMULARIO (solo operador) -->
+<div class="card" id="formCard">
 <h3>Nuevo Registro</h3>
 <form id="form">
 <input type="text" id="operador" readonly>
@@ -83,7 +87,6 @@ td{padding:6px;border-bottom:1px solid #eee}
 </div> <!-- fin container -->
 
 <script>
-
 // URL de tu Apps Script
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycby7Vr0mtyI43dCaZM1OB4QdcbnFSz7rQlx4oPl1Y5Q-ps5AHuxoVuUMlWaLe4g41GzS/exec";
 
@@ -97,22 +100,34 @@ for(let i=1;i<=41;i++){
 }
 
 let operadorActual = "";
+let modoActual = "operador";
 
 // LOGIN
 function login(){
   const nombre=document.getElementById("loginOperador").value.trim();
   if(!nombre) return alert("Ingrese nombre");
+  
   operadorActual = nombre;
-  localStorage.setItem("operador", operadorActual);
-  document.getElementById("operador").value = operadorActual;
+  modoActual = document.getElementById("modo").value;
+
   document.getElementById("loginCard").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
+
+  // Si estamos en modo visualización, ocultar formulario
+  if(modoActual === "visualizacion"){
+    document.getElementById("formCard").classList.add("hidden");
+  } else {
+    document.getElementById("formCard").classList.remove("hidden");
+    document.getElementById("operador").value = operadorActual;
+  }
+
   cargarRegistros();
 }
 
-// GUARDAR REGISTRO
+// GUARDAR REGISTRO (solo operador)
 document.getElementById("form").addEventListener("submit", function(e){
   e.preventDefault();
+  if(modoActual !== "operador") return;
 
   const data = {
     operador: operadorActual,
@@ -133,15 +148,11 @@ document.getElementById("form").addEventListener("submit", function(e){
     body: new URLSearchParams(data)
   })
   .then(res => res.json())
-  .then(resp => {
+  .then(() => {
     document.getElementById("msg").innerText = "Guardado correctamente";
     form.reset();
     document.getElementById("operador").value = operadorActual;
-    
-    // Pequeño delay para asegurar que la fila se guarde
-    setTimeout(() => {
-      cargarRegistros();
-    }, 500);
+    setTimeout(cargarRegistros, 500); // Pequeño delay
   })
   .catch(err => console.error("Error guardando:", err));
 });
@@ -156,7 +167,7 @@ function cargarRegistros(){
 
     const filtro = document.getElementById("filtroFecha").value;
 
-    data.reverse().forEach(row => { // recorremos todo
+    data.reverse().forEach(row => {
       if(filtro && row[0] !== filtro) return;
 
       tbody.innerHTML += `
