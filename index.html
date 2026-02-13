@@ -16,11 +16,12 @@ input, select {
   font-size:20px;
   padding:10px;
   margin:10px;
+  width:250px;
 }
 #guardar {
   background:green;
   color:white;
-  width:200px;
+  width:250px;
   height:70px;
   font-size:24px;
 }
@@ -33,20 +34,15 @@ input, select {
 
 <input type="text" id="usuario" placeholder="Nombre Operador"><br>
 
-<select id="calibre">
-  <option value="">Seleccionar Calibre</option>
-  <option>80</option>
-  <option>90</option>
-  <option>100</option>
-  <option>110</option>
-</select><br>
+<input type="text" id="calibre" placeholder="Ingresar Calibre (ej: 72, 88, 113)"><br>
 
 <select id="categoria">
-  <option value="">Seleccionar Categoria</option>
-  <option>Cat 1</option>
-  <option>Cat 2</option>
-  <option>Exportación</option>
-  <option>Nacional</option>
+  <option value="">Seleccionar Categoría</option>
+  <option>Premium</option>
+  <option>Extra</option>
+  <option>Fancy</option>
+  <option>Choice</option>
+  <option>Granel</option>
 </select><br>
 
 <input type="number" id="peso" placeholder="Peso (kg)" step="0.01"><br>
@@ -58,8 +54,8 @@ input, select {
 
 <script>
 function guardar(){
-  var usuario = document.getElementById("usuario").value;
-  var calibre = document.getElementById("calibre").value;
+  var usuario = document.getElementById("usuario").value.trim();
+  var calibre = document.getElementById("calibre").value.trim();
   var categoria = document.getElementById("categoria").value;
   var peso = document.getElementById("peso").value;
 
@@ -68,7 +64,7 @@ function guardar(){
     return;
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbyesPG5gRI33o-4Lq3I_-Q0DYqTdvofUFbzjFBOp7PiiBafP9yAZmOgWLdPhruumWjf/exec", {
+  fetch("TU_URL_AQUI", {
     method: "POST",
     body: JSON.stringify({
       usuario: usuario,
@@ -80,7 +76,11 @@ function guardar(){
   .then(res => res.text())
   .then(data => {
     document.getElementById("mensaje").innerHTML = "Registro Guardado ✅";
+    document.getElementById("calibre").value = "";
     document.getElementById("peso").value = "";
+  })
+  .catch(error => {
+    document.getElementById("mensaje").innerHTML = "Error al guardar ❌";
   });
 }
 </script>
