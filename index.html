@@ -63,12 +63,6 @@ td{padding:6px;border-bottom:1px solid #eee}
 </form>
 </div>
 
-<!-- RESUMEN DEL DÍA -->
-<div class="card">
-<h3>Resumen del Día</h3>
-<p id="totalDia"></p>
-</div>
-
 <!-- REGISTROS -->
 <div class="card">
 <h3>Registros</h3>
@@ -90,7 +84,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 
 <script>
 
-// URL de tu Apps Script (copia aquí tu /exec)
+// URL de tu Apps Script
 const SCRIPT_URL="PEGA_AQUI_TU_NUEVO_EXEC";
 
 // Generar salidas automáticamente del 1 al 41
@@ -102,30 +96,31 @@ for(let i=1;i<=41;i++){
   salidaSelect.appendChild(option);
 }
 
-let operadorActual;
+let operadorActual = "";
 
 // LOGIN
 function login(){
-  const nombre=document.getElementById("loginOperador").value;
+  const nombre=document.getElementById("loginOperador").value.trim();
   if(!nombre) return alert("Ingrese nombre");
-  localStorage.setItem("operador",nombre);
-  document.getElementById("operador").value=nombre;
   operadorActual = nombre;
+  localStorage.setItem("operador", operadorActual);
+  document.getElementById("operador").value = operadorActual;
   document.getElementById("loginCard").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
   cargarRegistros();
 }
 
 // GUARDAR REGISTRO
-document.getElementById("form").addEventListener("submit",function(e){
+document.getElementById("form").addEventListener("submit", function(e){
   e.preventDefault();
-  const data={
-    operador:document.getElementById("operador").value,
-    exportadora:document.getElementById("exportadora").value,
-    salida:document.getElementById("salida").value,
-    calibre:document.getElementById("calibre").value,
-    categoria:document.getElementById("categoria").value,
-    peso:document.getElementById("peso").value
+
+  const data = {
+    operador: operadorActual,
+    exportadora: document.getElementById("exportadora").value,
+    salida: document.getElementById("salida").value,
+    calibre: document.getElementById("calibre").value,
+    categoria: document.getElementById("categoria").value,
+    peso: document.getElementById("peso").value
   };
 
   if(!data.salida){
@@ -133,32 +128,34 @@ document.getElementById("form").addEventListener("submit",function(e){
     return;
   }
 
-  fetch(SCRIPT_URL,{method:"POST",body:new URLSearchParams(data)})
-  .then(res=>res.json())
-  .then(()=>{
-    document.getElementById("msg").innerText="Guardado correctamente";
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: new URLSearchParams(data)
+  })
+  .then(res => res.json())
+  .then(resp => {
+    document.getElementById("msg").innerText = "Guardado correctamente";
     form.reset();
-    document.getElementById("operador").value=operadorActual;
+    document.getElementById("operador").value = operadorActual;
     cargarRegistros();
-  });
+  })
+  .catch(err => console.error("Error guardando:", err));
 });
 
-// CARGAR REGISTROS Y TOTAL DEL DÍA
+// CARGAR REGISTROS
 function cargarRegistros(){
-fetch(SCRIPT_URL)
-.then(res=>res.json())
-.then(data=>{
-  const tbody=document.getElementById("tabla");
-  tbody.innerHTML="";
-  let total=0;
+  fetch(SCRIPT_URL)
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("tabla");
+    tbody.innerHTML = "";
 
-  const filtro=document.getElementById("filtroFecha").value;
+    const filtro = document.getElementById("filtroFecha").value;
 
-  data.slice(1).reverse().forEach(row=>{
-    if(filtro && row[0]!==filtro) return; // filtrar por fecha
-    total+=parseFloat(row[7]);
+    data.slice(1).reverse().forEach(row => {
+      if(filtro && row[0] !== filtro) return;
 
-    tbody.innerHTML+=`
+      tbody.innerHTML += `
       <tr>
       <td>${row[0]}</td>
       <td>${row[1]}</td>
@@ -169,12 +166,10 @@ fetch(SCRIPT_URL)
       <td>${row[6]}</td>
       <td>${row[7]}</td>
       </tr>
-    `;
-  });
-
-  document.getElementById("totalDia").innerText="Total kilos: "+total.toFixed(2);
-});
-
+      `;
+    });
+  })
+  .catch(err => console.error("Error cargando registros:", err));
 }
 
 </script>
