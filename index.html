@@ -195,16 +195,16 @@ function cargarRegistros(){
 }
 
 /* Guardar */
-document.getElementById("form").addEventListener("submit",function(e){
+document.getElementById("form").addEventListener("submit", function(e){
   e.preventDefault();
 
-  const data={
-    operador:operador.value,
-    exportadora:exportadora.value,
-    salida:salida.value,
-    calibre:calibre.value,
-    categoria:categoria.value,
-    peso:peso.value
+  const data = {
+    operador: document.getElementById("operador").value,
+    exportadora: document.getElementById("exportadora").value,
+    salida: document.getElementById("salida").value,
+    calibre: document.getElementById("calibre").value,
+    categoria: document.getElementById("categoria").value,
+    peso: document.getElementById("peso").value
   };
 
   fetch(SCRIPT_URL,{
@@ -212,19 +212,24 @@ document.getElementById("form").addEventListener("submit",function(e){
     headers:{
       "Content-Type":"application/json"
     },
-    body:JSON.stringify(data)
+    body: JSON.stringify(data)
   })
-  .then(res=>res.json())
-  .then(response=>{
-    if(response.status==="success"){
-      this.reset();
+  .then(res => res.json())
+  .then(response => {
+    console.log(response);
+
+    if(response.status === "success"){
+      document.getElementById("form").reset();
       cargarRegistros();
     } else {
-      console.error("Error backend:", response);
+      alert("Error: " + response.message);
     }
   })
-  .catch(err=>console.error("Error POST:",err));
+  .catch(err => {
+    console.error("Error POST:", err);
+  });
 });
+
 
 /* Cargar al iniciar */
 cargarRegistros();
