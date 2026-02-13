@@ -27,10 +27,10 @@ td{padding:6px;border-bottom:1px solid #eee}
 <!-- LOGIN -->
 <div class="card" id="loginCard">
 <h3>Ingreso</h3>
+<input type="text" id="nombreOperador" placeholder="Nombre operador">
 <input type="password" id="claveOperador" placeholder="Clave operador">
 <button onclick="ingresarOperador()">Operador</button>
 <button onclick="modoVisualizacion()">Visualización</button>
-<p style="font-size:12px;margin-top:5px;">Clave operador: <strong>fresh</strong></p>
 <p id="msgLogin" style="color:red;"></p>
 </div>
 
@@ -41,7 +41,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 <div class="card" id="formCard">
 <h3>Nuevo Registro</h3>
 <form id="form">
-<input type="text" id="operador" readonly value="Operador">
+<input type="text" id="operador" readonly>
 <select id="exportadora" required>
 <option value="">Exportadora</option>
 <option>Fruclem</option>
@@ -108,15 +108,25 @@ for(let i=1;i<=41;i++){
 }
 
 let modoActual = "visualizacion";
+let nombreActual = "";
 
 // Funciones de login
 function ingresarOperador(){
-  const clave = document.getElementById("claveOperador").value.trim();
+  const nombre = document.getElementById("nombreOperador").value.trim();
+  const clave  = document.getElementById("claveOperador").value.trim();
+
+  if(!nombre || !clave){
+    document.getElementById("msgLogin").innerText = "Ingrese nombre y clave";
+    return;
+  }
+
   if(clave === "fresh"){
     modoActual = "operador";
+    nombreActual = nombre;
     document.getElementById("loginCard").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     document.getElementById("formCard").classList.remove("hidden");
+    document.getElementById("operador").value = nombreActual;
     cargarRegistros();
   } else {
     document.getElementById("msgLogin").innerText = "Clave incorrecta";
@@ -137,7 +147,7 @@ document.getElementById("form").addEventListener("submit", function(e){
   if(modoActual !== "operador") return;
 
   const data = {
-    operador: "Operador",
+    operador: nombreActual,
     exportadora: document.getElementById("exportadora").value,
     salida: document.getElementById("salida").value,
     calibre: document.getElementById("calibre").value,
@@ -160,6 +170,7 @@ document.getElementById("form").addEventListener("submit", function(e){
   .then(() => {
     document.getElementById("msg").innerText = "Guardado correctamente";
     form.reset();
+    document.getElementById("operador").value = nombreActual;
     setTimeout(cargarRegistros, 500);
   })
   .catch(err => console.error("Error guardando:", err));
