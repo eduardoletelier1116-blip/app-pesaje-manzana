@@ -162,28 +162,49 @@ for(let i=1;i<=41;i++){
   salidaSelect.appendChild(option);
 }
 
-/* Cargar Datos */
-function cargarDatos(){
-  fetch(SCRIPT_URL + "?action=getData")
-  .then(res=>res.json())
-  .then(data=>{
-    tablaBody.innerHTML="";
-    for(let i=data.length-1;i>0;i--){
-      let row=data[i];
-      let tr=document.createElement("tr");
+function cargarRegistros() {
 
-      row.forEach(cell=>{
-        let td=document.createElement("td");
-        td.textContent=cell;
-        tr.appendChild(td);
+  fetch(URL_SCRIPT)
+    .then(response => response.json())
+    .then(data => {
+
+      const tabla = document.getElementById("tablaRegistros");
+      tabla.innerHTML = "";
+
+      if (!data || data.length <= 1) {
+        tabla.innerHTML = "<tr><td colspan='8'>Sin registros</td></tr>";
+        return;
+      }
+
+      // 🔹 Encabezados
+      let encabezado = "<tr>";
+      data[0].forEach(columna => {
+        encabezado += `<th>${columna}</th>`;
+      });
+      encabezado += "</tr>";
+
+      tabla.innerHTML = encabezado;
+
+      // 🔥 CLAVE: invertir el array (excepto encabezado)
+      const registros = data.slice(1).reverse();
+
+      registros.forEach(filaData => {
+
+        let fila = "<tr>";
+
+        filaData.forEach(celda => {
+          fila += `<td>${celda}</td>`;
+        });
+
+        fila += "</tr>";
+        tabla.innerHTML += fila;
+
       });
 
-      tablaBody.appendChild(tr);
-    }
-  })
-  .catch(error=>{
-    console.log("Error cargando datos",error);
-  });
+    })
+    .catch(error => {
+      console.error("Error cargando registros:", error);
+    });
 }
 
 /* Guardar */
