@@ -1,1 +1,89 @@
-fetch("https://script.google.com/macros/s/AKfycbyesPG5gRI33o-4Lq3I_-Q0DYqTdvofUFbzjFBOp7PiiBafP9yAZmOgWLdPhruumWjf/exec", {
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Registro Pesaje Manzana</title>
+<style>
+body { font-family: Arial; text-align: center; background:#f2f2f2; }
+.container { margin-top:40px; }
+button { 
+  width:120px; 
+  height:60px; 
+  font-size:20px; 
+  margin:10px; 
+}
+input, select {
+  font-size:20px;
+  padding:10px;
+  margin:10px;
+}
+#guardar {
+  background:green;
+  color:white;
+  width:200px;
+  height:70px;
+  font-size:24px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h2>Registro Pesaje 🍎</h2>
+
+<input type="text" id="usuario" placeholder="Nombre Operador"><br>
+
+<select id="calibre">
+  <option value="">Seleccionar Calibre</option>
+  <option>80</option>
+  <option>90</option>
+  <option>100</option>
+  <option>110</option>
+</select><br>
+
+<select id="categoria">
+  <option value="">Seleccionar Categoria</option>
+  <option>Cat 1</option>
+  <option>Cat 2</option>
+  <option>Exportación</option>
+  <option>Nacional</option>
+</select><br>
+
+<input type="number" id="peso" placeholder="Peso (kg)" step="0.01"><br>
+
+<button id="guardar" onclick="guardar()">GUARDAR</button>
+
+<p id="mensaje"></p>
+</div>
+
+<script>
+function guardar(){
+  var usuario = document.getElementById("usuario").value;
+  var calibre = document.getElementById("calibre").value;
+  var categoria = document.getElementById("categoria").value;
+  var peso = document.getElementById("peso").value;
+
+  if(!usuario || !calibre || !categoria || !peso){
+    alert("Complete todos los campos");
+    return;
+  }
+
+  fetch("https://script.google.com/macros/s/AKfycbyesPG5gRI33o-4Lq3I_-Q0DYqTdvofUFbzjFBOp7PiiBafP9yAZmOgWLdPhruumWjf/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      usuario: usuario,
+      calibre: calibre,
+      categoria: categoria,
+      peso: peso
+    })
+  })
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("mensaje").innerHTML = "Registro Guardado ✅";
+    document.getElementById("peso").value = "";
+  });
+}
+</script>
+
+</body>
+</html>
