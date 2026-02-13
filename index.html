@@ -2,12 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Producción</title>
+<title>Sistema Producción</title>
 
 <style>
 body{
   margin:0;
-  font-family:'Segoe UI',sans-serif;
+  font-family:Segoe UI,sans-serif;
   background:#f4f6f9;
 }
 
@@ -28,16 +28,16 @@ header{
 
 .card{
   background:white;
-  padding:25px;
+  padding:20px;
   border-radius:12px;
   box-shadow:0 5px 15px rgba(0,0,0,0.08);
-  margin-bottom:30px;
+  margin-bottom:25px;
 }
 
 input, select{
   width:100%;
   padding:10px;
-  margin:8px 0 15px 0;
+  margin:8px 0;
   border-radius:8px;
   border:1px solid #ddd;
   box-sizing:border-box;
@@ -92,7 +92,6 @@ tr:hover{
 <div class="container">
 
 <div class="card">
-<h3>Nuevo Registro</h3>
 
 <form id="form">
 
@@ -124,10 +123,10 @@ tr:hover{
 <button type="submit">Guardar</button>
 
 </form>
+
 </div>
 
 <div class="card">
-<h3>Registros</h3>
 <div class="scroll">
 <table id="tabla">
 <thead>
@@ -150,12 +149,12 @@ tr:hover{
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwD8DvMQjgK3UZFUi5g0glBo4PBpLekw4JpMYpjN81lEVcqC5DvHk9g1jTgYjmEkjB3/exec";
-const form = document.getElementById("form");
-const tablaBody = document.querySelector("#tabla tbody");
-const salidaSelect = document.getElementById("salida");
 
-/* Generar salidas 1 a 41 */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwgAzf5QUwoOliVOmLGiuEhIGWyguIBwF20-FpTu6W-EUMyDomzyghE4waCe0ied1G/exec";
+const tablaBody = document.querySelector("#tabla tbody");
+
+/* Generar Salidas 1 a 41 */
+const salidaSelect = document.getElementById("salida");
 for(let i=1;i<=41;i++){
   let option=document.createElement("option");
   option.value=i;
@@ -163,9 +162,9 @@ for(let i=1;i<=41;i++){
   salidaSelect.appendChild(option);
 }
 
-/* Cargar datos */
+/* Cargar Datos */
 function cargarDatos(){
-  fetch(SCRIPT_URL)
+  fetch(SCRIPT_URL + "?action=getData")
   .then(res=>res.json())
   .then(data=>{
     tablaBody.innerHTML="";
@@ -181,36 +180,40 @@ function cargarDatos(){
 
       tablaBody.appendChild(tr);
     }
+  })
+  .catch(error=>{
+    console.log("Error cargando datos",error);
   });
 }
 
 /* Guardar */
-form.addEventListener("submit",function(e){
+document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
 
   const data={
     operador:operador.value,
     exportadora:exportadora.value,
-    categoria:categoria.value,
     salida:salida.value,
     calibre:calibre.value,
+    categoria:categoria.value,
     peso:peso.value
   };
 
-fetch(SCRIPT_URL + "?action=getData")
+  fetch(SCRIPT_URL,{
     method:"POST",
     body:JSON.stringify(data)
   })
   .then(res=>res.json())
   .then(response=>{
     if(response.status==="success"){
-      form.reset();
+      this.reset();
       cargarDatos();
     }
   });
 });
 
 cargarDatos();
+
 </script>
 
 </body>
