@@ -99,33 +99,31 @@ Sistema de Registro de Producción
 
 <form id="form">
 
+<label>Nombre del Operador</label>
+<input type="text" id="operador" placeholder="Ingrese nombre del operador" required>
+
 <label>Exportadora</label>
 <select id="exportadora" required>
   <option value="">Seleccione exportadora</option>
-  <option value="Copefrut">Copefrut</option>
-  <option value="Río King">Río King</option>
-  <option value="Prize">Prize</option>
-  <option value="Subsole">Subsole</option>
-</select>
-
-<label>Salida</label>
-<select id="salida" required>
-  <option value="">Seleccione salida</option>
-  <option value="Packing 1">Packing 1</option>
-  <option value="Packing 2">Packing 2</option>
-  <option value="Packing 3">Packing 3</option>
+  <option value="Fruclem">Fruclem</option>
+  <option value="JHB">JHB</option>
+  <option value="Talamaya">Talamaya</option>
 </select>
 
 <label>Categoría</label>
 <select id="categoria" required>
   <option value="">Seleccione categoría</option>
-  <option value="Cat 1">Cat 1</option>
-  <option value="Cat 2">Cat 2</option>
-  <option value="Industrial">Industrial</option>
+  <option value="Premium">Premium</option>
+  <option value="Extra">Extra</option>
+  <option value="Fancy Choice">Fancy Choice</option>
+  <option value="Granel">Granel</option>
 </select>
 
-<label>Nombre del Operador</label>
-<input type="text" id="operador" placeholder="Ingrese nombre del operador" required>
+<label>Salida</label>
+<select id="salida" required>
+  <option value="">Seleccione salida</option>
+  <!-- Generado dinámicamente -->
+</select>
 
 <label>Calibre</label>
 <input type="text" id="calibre" placeholder="Ej: 2J, 3J, XL..." required>
@@ -145,18 +143,27 @@ Sistema desarrollado para control interno de producción
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5m5zIrDfBAEOc-YHVXrUK4UsNC_XjqyYo1zClirbDDOeDVLBvKiFaCJmMgt3OIcWe/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeI6iwqoQ5JOacFq7CfHzswQRz8YpVxXKprN9XVCCbPkvsDh9GdvYUhusYGkh4kAOb/exec";
 
 const form = document.getElementById("form");
+const salidaSelect = document.getElementById("salida");
+
+/* Generar salidas del 1 al 41 automáticamente */
+for(let i = 1; i <= 41; i++){
+  let option = document.createElement("option");
+  option.value = i;
+  option.text = "Salida " + i;
+  salidaSelect.appendChild(option);
+}
 
 form.addEventListener("submit", function(e){
   e.preventDefault();
 
   const data = {
-    exportadora: document.getElementById("exportadora").value,
-    salida: document.getElementById("salida").value,
-    categoria: document.getElementById("categoria").value,
     operador: document.getElementById("operador").value,
+    exportadora: document.getElementById("exportadora").value,
+    categoria: document.getElementById("categoria").value,
+    salida: document.getElementById("salida").value,
     calibre: document.getElementById("calibre").value,
     peso: document.getElementById("peso").value
   };
@@ -171,15 +178,4 @@ form.addEventListener("submit", function(e){
       alert("Registro guardado correctamente");
       form.reset();
     }else{
-      alert("Error: "+response.message);
-    }
-  })
-  .catch(error=>{
-    alert("Error de conexión");
-    console.error(error);
-  });
-});
-</script>
-
-</body>
-</html>
+      alert("Error: "+response.messag
