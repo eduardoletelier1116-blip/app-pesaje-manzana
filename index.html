@@ -6,12 +6,6 @@
 <style>
 body { font-family: Arial; text-align: center; background:#f2f2f2; }
 .container { margin-top:40px; }
-button { 
-  width:120px; 
-  height:60px; 
-  font-size:20px; 
-  margin:10px; 
-}
 input, select {
   font-size:20px;
   padding:10px;
@@ -34,7 +28,14 @@ input, select {
 
 <input type="text" id="usuario" placeholder="Nombre Operador"><br>
 
-<input type="text" id="calibre" placeholder="Ingresar Calibre (ej: 72, 88, 113)"><br>
+<select id="exportadora">
+  <option value="">Seleccionar Exportadora</option>
+  <option>Exportadora 1</option>
+  <option>Exportadora 2</option>
+  <option>Exportadora 3</option>
+</select><br>
+
+<input type="text" id="calibre" placeholder="Ingresar Calibre"><br>
 
 <select id="categoria">
   <option value="">Seleccionar Categoría</option>
@@ -55,19 +56,21 @@ input, select {
 <script>
 function guardar(){
   var usuario = document.getElementById("usuario").value.trim();
+  var exportadora = document.getElementById("exportadora").value;
   var calibre = document.getElementById("calibre").value.trim();
   var categoria = document.getElementById("categoria").value;
   var peso = document.getElementById("peso").value;
 
-  if(!usuario || !calibre || !categoria || !peso){
+  if(!usuario || !exportadora || !calibre || !categoria || !peso){
     alert("Complete todos los campos");
     return;
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbyesPG5gRI33o-4Lq3I_-Q0DYqTdvofUFbzjFBOp7PiiBafP9yAZmOgWLdPhruumWjf/exec", {
+  fetch("TU_URL_AQUI", {
     method: "POST",
     body: JSON.stringify({
       usuario: usuario,
+      exportadora: exportadora,
       calibre: calibre,
       categoria: categoria,
       peso: peso
