@@ -2,173 +2,217 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Registro Producción</title>
+<title>Sistema Producción</title>
 
 <style>
 body{
-  font-family: Arial;
-  margin:40px;
+  margin:0;
+  font-family:Segoe UI,sans-serif;
+  background:#f4f6f9;
 }
 
-form{
-  margin-bottom:30px;
+header{
+  background:linear-gradient(90deg,#1e3c72,#2a5298);
+  color:white;
+  padding:20px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{
+  max-width:1100px;
+  margin:30px auto;
+  padding:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom:25px;
 }
 
 input, select{
-  padding:8px;
-  margin:5px;
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+  box-sizing:border-box;
 }
 
 button{
-  padding:8px 15px;
+  background:#2a5298;
+  color:white;
+  border:none;
+  padding:12px;
+  width:100%;
+  border-radius:8px;
   cursor:pointer;
 }
 
-table{
-  border-collapse: collapse;
-  width:100%;
+button:hover{
+  background:#1e3c72;
 }
 
-th, td{
-  border:1px solid #ccc;
-  padding:8px;
-  text-align:center;
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
 }
 
 th{
-  background:#f2f2f2;
+  background:#2a5298;
+  color:white;
+  padding:8px;
+}
+
+td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+}
+
+tr:hover{
+  background:#f1f5ff;
+}
+
+.scroll{
+  max-height:400px;
+  overflow:auto;
 }
 </style>
-
 </head>
+
 <body>
 
-<h2>Registro Producción</h2>
+<header>Sistema de Registro de Producción</header>
 
-<form id="formulario">
+<div class="container">
 
-<input type="text" id="operador" placeholder="Operador" required>
+<div class="card">
 
-<input type="text" id="exportadora" placeholder="Exportadora" required>
+<form id="form">
 
-<select id="salida" required></select>
+<input type="text" id="operador" placeholder="Nombre del Operador" required>
+
+<select id="exportadora" required>
+  <option value="">Exportadora</option>
+  <option value="Fruclem">Fruclem</option>
+  <option value="JHB">JHB</option>
+  <option value="Talamaya">Talamaya</option>
+</select>
+
+<select id="categoria" required>
+  <option value="">Categoría</option>
+  <option value="Premium">Premium</option>
+  <option value="Extra">Extra</option>
+  <option value="Fancy">Fancy</option>
+  <option value="Choice">Choice</option>
+  <option value="Granel">Granel</option>
+</select>
+
+<select id="salida" required>
+  <option value="">Salida</option>
+</select>
 
 <input type="text" id="calibre" placeholder="Calibre" required>
-
-<input type="text" id="categoria" placeholder="Categoría" required>
-
 <input type="number" id="peso" placeholder="Peso (kg)" step="0.01" required>
 
 <button type="submit">Guardar</button>
 
 </form>
 
-<table>
-  <tbody id="tablaRegistros"></tbody>
+</div>
+
+<div class="card">
+<div class="scroll">
+<table id="tabla">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Usuario</th>
+<th>Exportadora</th>
+<th>Salida</th>
+<th>Calibre</th>
+<th>Categoria</th>
+<th>Peso</th>
+</tr>
+</thead>
+<tbody></tbody>
 </table>
+</div>
+</div>
+
+</div>
 
 <script>
 
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxzTq-ZetGGskFJ2y6LNIv6d5WeXVZtZ8YLks-U0tKe_rpx44WR9lOsR2KJpw8rggpn/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwgAzf5QUwoOliVOmLGiuEhIGWyguIBwF20-FpTu6W-EUMyDomzyghE4waCe0ied1G/exec";
+const tablaBody = document.querySelector("#tabla tbody");
 
-// 🔹 Generar salidas 1 a 41
+/* Generar Salidas 1 a 41 */
 const salidaSelect = document.getElementById("salida");
-
-salidaSelect.innerHTML = '<option value="">Seleccione salida</option>';
-
-for (let i = 1; i <= 41; i++) {
-  let option = document.createElement("option");
-  option.value = i;
-  option.textContent = i;
+for(let i=1;i<=41;i++){
+  let option=document.createElement("option");
+  option.value=i;
+  option.text="Salida "+i;
   salidaSelect.appendChild(option);
 }
 
-// 🔹 Enviar formulario
-document.getElementById("formulario").addEventListener("submit", function(e){
+/* Cargar Datos */
+function cargarDatos(){
+  fetch(SCRIPT_URL + "?action=getData")
+  .then(res=>res.json())
+  .then(data=>{
+    tablaBody.innerHTML="";
+    for(let i=1;i<data.length;i++){
+      let row=data[i];
+      let tr=document.createElement("tr");
 
-  e.preventDefault();
-
-  const datos = {
-    operador: document.getElementById("operador").value,
-    exportadora: document.getElementById("exportadora").value,
-    salida: document.getElementById("salida").value,
-    calibre: document.getElementById("calibre").value,
-    categoria: document.getElementById("categoria").value,
-    peso: parseFloat(document.getElementById("peso").value)
-  };
-
-  fetch(URL_SCRIPT, {
-    method: "POST",
-    mode: "cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(datos)
-  })
-  .then(res => res.json())
-  .then(response => {
-
-    if(response.status === "success"){
-      alert("Registro guardado correctamente");
-      document.getElementById("formulario").reset();
-      cargarRegistros();
-    } else {
-      alert("Error al guardar: " + response.message);
-    }
-
-  })
-  .catch(error => {
-    alert("Error de conexión");
-    console.error(error);
-  });
-
-});
-
-// 🔹 Cargar registros
-function cargarRegistros() {
-
-  fetch(URL_SCRIPT)
-    .then(response => response.json())
-    .then(data => {
-
-      const tabla = document.getElementById("tablaRegistros");
-      tabla.innerHTML = "";
-
-      if (!data || data.length === 0) {
-        tabla.innerHTML = "<tr><td colspan='8'>Sin registros</td></tr>";
-        return;
-      }
-
-      // Encabezados
-      let encabezado = "<tr>";
-      data[0].forEach(columna => {
-        encabezado += `<th>${columna}</th>`;
+      row.forEach(cell=>{
+        let td=document.createElement("td");
+        td.textContent=cell;
+        tr.appendChild(td);
       });
-      encabezado += "</tr>";
 
-      tabla.innerHTML += encabezado;
-
-      // 🔥 Mostrar últimos registros primero
-      for (let i = data.length - 1; i > 0; i--) {
-
-        let fila = "<tr>";
-
-        for (let j = 0; j < data[i].length; j++) {
-          fila += `<td>${data[i][j]}</td>`;
-        }
-
-        fila += "</tr>";
-        tabla.innerHTML += fila;
-      }
-
-    })
-    .catch(error => {
-      console.error("Error cargando registros:", error);
-    });
+      tablaBody.appendChild(tr);
+    }
+  })
+  .catch(error=>{
+    console.log("Error cargando datos",error);
+  });
 }
 
-// Cargar al abrir
-window.onload = cargarRegistros;
+/* Guardar */
+document.getElementById("form").addEventListener("submit",function(e){
+  e.preventDefault();
+
+  const data={
+    operador:operador.value,
+    exportadora:exportadora.value,
+    salida:salida.value,
+    calibre:calibre.value,
+    categoria:categoria.value,
+    peso:peso.value
+  };
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    body:JSON.stringify(data)
+  })
+  .then(res=>res.json())
+  .then(response=>{
+    if(response.status==="success"){
+      this.reset();
+      cargarDatos();
+    }
+  });
+});
+
+cargarDatos();
 
 </script>
 
