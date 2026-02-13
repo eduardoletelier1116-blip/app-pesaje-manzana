@@ -166,12 +166,7 @@ for(let i=1;i<=41;i++){
 function cargarRegistros(){
 
   fetch(SCRIPT_URL)
-  .then(res=>{
-    if(!res.ok){
-      throw new Error("Error HTTP "+res.status);
-    }
-    return res.json();
-  })
+  .then(res=>res.json())
   .then(data=>{
 
     tablaBody.innerHTML="";
@@ -181,13 +176,14 @@ function cargarRegistros(){
       return;
     }
 
+    // quitar encabezado y dar vuelta
     const registros=data.slice(1).reverse();
 
     registros.forEach(fila=>{
-      const tr=document.createElement("tr");
+      let tr=document.createElement("tr");
 
       fila.forEach(celda=>{
-        const td=document.createElement("td");
+        let td=document.createElement("td");
         td.textContent=celda;
         tr.appendChild(td);
       });
@@ -196,12 +192,10 @@ function cargarRegistros(){
     });
 
   })
-  .catch(err=>{
-    console.error("Error cargando:",err);
-  });
+  .catch(err=>console.error("Error:",err));
 }
-
-/* Guardar */
+ 
+  /* Guardar */
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
 
