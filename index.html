@@ -2,9 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sistema Producción PRO</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<title>Registro de Pesos</title>
 <style>
 body{font-family:Segoe UI;margin:0;background:#f4f6f9}
 header{background:#1e3c72;color:white;padding:20px;text-align:center;font-size:22px}
@@ -22,7 +20,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 </head>
 <body>
 
-<header>Sistema Producción PRO</header>
+<header>Registro de Pesos</header>
 
 <div class="container">
 
@@ -69,7 +67,6 @@ td{padding:6px;border-bottom:1px solid #eee}
 <div class="card">
 <h3>Resumen del Día</h3>
 <p id="totalDia"></p>
-<canvas id="grafico"></canvas>
 </div>
 
 <!-- REGISTROS -->
@@ -80,7 +77,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 <thead>
 <tr>
 <th>Fecha</th><th>Hora</th><th>Usuario</th><th>Exportadora</th>
-<th>Salida</th><th>Calibre</th><th>Categoria</th><th>Peso</th><th>Acción</th>
+<th>Salida</th><th>Calibre</th><th>Categoria</th><th>Peso</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
@@ -94,9 +91,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 <script>
 
 // URL de tu Apps Script (copia aquí tu /exec)
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwSkkHZbTz_fcMSPSUNLVcOKqnWdBvG_y_3lMQ1Ii2ocq3G3Z5SOVdLGuo-iAl-8cNU/exec";
-
-let chart;
+const SCRIPT_URL="PEGA_AQUI_TU_NUEVO_EXEC";
 
 // Generar salidas automáticamente del 1 al 41
 const salidaSelect = document.getElementById("salida");
@@ -107,12 +102,15 @@ for(let i=1;i<=41;i++){
   salidaSelect.appendChild(option);
 }
 
+let operadorActual;
+
 // LOGIN
 function login(){
   const nombre=document.getElementById("loginOperador").value;
   if(!nombre) return alert("Ingrese nombre");
   localStorage.setItem("operador",nombre);
   document.getElementById("operador").value=nombre;
+  operadorActual = nombre;
   document.getElementById("loginCard").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
   cargarRegistros();
@@ -140,12 +138,12 @@ document.getElementById("form").addEventListener("submit",function(e){
   .then(()=>{
     document.getElementById("msg").innerText="Guardado correctamente";
     form.reset();
-    document.getElementById("operador").value=localStorage.getItem("operador");
+    document.getElementById("operador").value=operadorActual;
     cargarRegistros();
   });
 });
 
-// CARGAR REGISTROS Y GENERAR RESUMEN Y GRÁFICO
+// CARGAR REGISTROS Y TOTAL DEL DÍA
 function cargarRegistros(){
 fetch(SCRIPT_URL)
 .then(res=>res.json())
@@ -153,15 +151,12 @@ fetch(SCRIPT_URL)
   const tbody=document.getElementById("tabla");
   tbody.innerHTML="";
   let total=0;
-  let categorias={};
 
   const filtro=document.getElementById("filtroFecha").value;
 
   data.slice(1).reverse().forEach(row=>{
     if(filtro && row[0]!==filtro) return; // filtrar por fecha
-
     total+=parseFloat(row[7]);
-    categorias[row[6]]=(categorias[row[6]]||0)+parseFloat(row[7]);
 
     tbody.innerHTML+=`
       <tr>
@@ -173,30 +168,13 @@ fetch(SCRIPT_URL)
       <td>${row[5]}</td>
       <td>${row[6]}</td>
       <td>${row[7]}</td>
-      <td><button onclick="eliminar(${row[8]})">X</button></td>
       </tr>
     `;
   });
 
   document.getElementById("totalDia").innerText="Total kilos: "+total.toFixed(2);
-
-  const ctx=document.getElementById("grafico");
-  if(chart) chart.destroy();
-  chart=new Chart(ctx,{
-    type:"bar",
-    data:{
-      labels:Object.keys(categorias),
-      datasets:[{label:"Kilos",data:Object.values(categorias)}]
-    }
-  });
 });
-}
 
-// ELIMINAR REGISTRO
-function eliminar(id){
-if(!confirm("¿Eliminar registro?")) return;
-fetch(SCRIPT_URL+"?id="+id,{method:"DELETE"})
-.then(()=>cargarRegistros());
 }
 
 </script>
