@@ -115,14 +115,14 @@ Sistema de Registro de Producción
   <option value="">Seleccione categoría</option>
   <option value="Premium">Premium</option>
   <option value="Extra">Extra</option>
-  <option value="Fancy Choice">Fancy Choice</option>
+  <option value="Fancy">Fancy</option>
+  <option value="Choice">Choice</option>
   <option value="Granel">Granel</option>
 </select>
 
 <label>Salida</label>
 <select id="salida" required>
   <option value="">Seleccione salida</option>
-  <!-- Generado dinámicamente -->
 </select>
 
 <label>Calibre</label>
@@ -143,12 +143,12 @@ Sistema desarrollado para control interno de producción
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeI6iwqoQ5JOacFq7CfHzswQRz8YpVxXKprN9XVCCbPkvsDh9GdvYUhusYGkh4kAOb/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_HbVbG1sV2S3rfLU7YVM9qTFDb31rQblKHHhXKcrm6TfexU9XsNS6dBCFEN_KX3Bf/exec";
 
 const form = document.getElementById("form");
 const salidaSelect = document.getElementById("salida");
 
-/* Generar salidas del 1 al 41 automáticamente */
+/* Generar Salidas del 1 al 41 */
 for(let i = 1; i <= 41; i++){
   let option = document.createElement("option");
   option.value = i;
@@ -178,4 +178,15 @@ form.addEventListener("submit", function(e){
       alert("Registro guardado correctamente");
       form.reset();
     }else{
-      alert("Error: "+response.messag
+      alert("Error: "+response.message);
+    }
+  })
+  .catch(error=>{
+    alert("Error de conexión");
+    console.error(error);
+  });
+});
+</script>
+
+</body>
+</html>
