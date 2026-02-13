@@ -197,7 +197,7 @@ function cargarRegistros(){
 /* Guardar */
 document.getElementById("form").addEventListener("submit", function(e){
   e.preventDefault();
-
+ console.log("Submit ejecutado")
   const data = {
     operador: document.getElementById("operador").value,
     exportadora: document.getElementById("exportadora").value,
