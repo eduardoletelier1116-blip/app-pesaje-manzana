@@ -30,9 +30,13 @@ input, select {
 
 <select id="exportadora">
   <option value="">Seleccionar Exportadora</option>
-  <option>Exportadora Fruclem</option>
-  <option>Exportadora JHB</option>
-  <option>Exportadora Talamaya</option>
+  <option>Exportadora 1</option>
+  <option>Exportadora 2</option>
+  <option>Exportadora 3</option>
+</select><br>
+
+<select id="salida">
+  <option value="">Seleccionar Salida</option>
 </select><br>
 
 <input type="text" id="calibre" placeholder="Ingresar Calibre"><br>
@@ -54,23 +58,34 @@ input, select {
 </div>
 
 <script>
+
+// Generar salidas 1 a 41 automáticamente
+for(let i=1; i<=41; i++){
+  let option = document.createElement("option");
+  option.text = i;
+  option.value = i;
+  document.getElementById("salida").add(option);
+}
+
 function guardar(){
   var usuario = document.getElementById("usuario").value.trim();
   var exportadora = document.getElementById("exportadora").value;
+  var salida = document.getElementById("salida").value;
   var calibre = document.getElementById("calibre").value.trim();
   var categoria = document.getElementById("categoria").value;
   var peso = document.getElementById("peso").value;
 
-  if(!usuario || !exportadora || !calibre || !categoria || !peso){
+  if(!usuario || !exportadora || !salida || !calibre || !categoria || !peso){
     alert("Complete todos los campos");
     return;
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbyesPG5gRI33o-4Lq3I_-Q0DYqTdvofUFbzjFBOp7PiiBafP9yAZmOgWLdPhruumWjf/exec", {
+  fetch("TU_URL_AQUI", {
     method: "POST",
     body: JSON.stringify({
       usuario: usuario,
       exportadora: exportadora,
+      salida: salida,
       calibre: calibre,
       categoria: categoria,
       peso: peso
