@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Registro de Producción</title>
+<title>Sistema de Producción</title>
 
 <style>
 body{
@@ -40,6 +40,11 @@ header{
   color:#2a5298;
 }
 
+label{
+  font-weight:600;
+  font-size:14px;
+}
+
 input, select{
   width:100%;
   padding:10px;
@@ -47,6 +52,13 @@ input, select{
   border-radius:8px;
   border:1px solid #ddd;
   font-size:14px;
+  box-sizing:border-box;
+}
+
+select{
+  appearance:none;
+  background:white url("data:image/svg+xml;utf8,<svg fill='%232a5298' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 10px center;
+  background-size:15px;
 }
 
 button{
@@ -63,28 +75,6 @@ button{
 
 button:hover{
   background:#1e3c72;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-
-th{
-  background:#2a5298;
-  color:white;
-  padding:10px;
-  text-align:left;
-}
-
-td{
-  padding:10px;
-  border-bottom:1px solid #eee;
-}
-
-tr:hover{
-  background:#f1f5ff;
 }
 
 .footer{
@@ -110,53 +100,52 @@ Sistema de Registro de Producción
 <form id="form">
 
 <label>Exportadora</label>
-<input type="text" id="exportadora" required>
+<select id="exportadora" required>
+  <option value="">Seleccione exportadora</option>
+  <option value="Copefrut">Copefrut</option>
+  <option value="Río King">Río King</option>
+  <option value="Prize">Prize</option>
+  <option value="Subsole">Subsole</option>
+</select>
 
 <label>Salida</label>
-<input type="text" id="salida" required>
-
-<label>Calibre</label>
-<input type="text" id="calibre" required>
+<select id="salida" required>
+  <option value="">Seleccione salida</option>
+  <option value="Packing 1">Packing 1</option>
+  <option value="Packing 2">Packing 2</option>
+  <option value="Packing 3">Packing 3</option>
+</select>
 
 <label>Categoría</label>
-<input type="text" id="categoria" required>
+<select id="categoria" required>
+  <option value="">Seleccione categoría</option>
+  <option value="Cat 1">Cat 1</option>
+  <option value="Cat 2">Cat 2</option>
+  <option value="Industrial">Industrial</option>
+</select>
 
-<label>Cantidad</label>
-<input type="number" id="cantidad" required>
+<label>Nombre del Operador</label>
+<input type="text" id="operador" placeholder="Ingrese nombre del operador" required>
+
+<label>Calibre</label>
+<input type="text" id="calibre" placeholder="Ej: 2J, 3J, XL..." required>
+
+<label>Peso (kg)</label>
+<input type="number" id="peso" step="0.01" placeholder="Ej: 12.5" required>
 
 <button type="submit">Guardar Registro</button>
 
 </form>
 </div>
 
-<div class="card">
-<h2>Registros Guardados</h2>
-
-<table id="tabla">
-<thead>
-<tr>
-<th>Fecha</th>
-<th>Exportadora</th>
-<th>Salida</th>
-<th>Calibre</th>
-<th>Categoría</th>
-<th>Cantidad</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
-
-</div>
-
 <div class="footer">
-Sistema desarrollado para control de producción
+Sistema desarrollado para control interno de producción
 </div>
 
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNusidlf2j9qDe_XeMBDuggQna2-766CSWHAPUUZQ6R0bx0A5yQNqTcxUG-AXsnE_6/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5m5zIrDfBAEOc-YHVXrUK4UsNC_XjqyYo1zClirbDDOeDVLBvKiFaCJmMgt3OIcWe/exec";
 
 const form = document.getElementById("form");
 
@@ -166,9 +155,10 @@ form.addEventListener("submit", function(e){
   const data = {
     exportadora: document.getElementById("exportadora").value,
     salida: document.getElementById("salida").value,
-    calibre: document.getElementById("calibre").value,
     categoria: document.getElementById("categoria").value,
-    cantidad: document.getElementById("cantidad").value
+    operador: document.getElementById("operador").value,
+    calibre: document.getElementById("calibre").value,
+    peso: document.getElementById("peso").value
   };
 
   fetch(SCRIPT_URL,{
@@ -186,6 +176,7 @@ form.addEventListener("submit", function(e){
   })
   .catch(error=>{
     alert("Error de conexión");
+    console.error(error);
   });
 });
 </script>
