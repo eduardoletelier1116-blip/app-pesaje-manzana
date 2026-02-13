@@ -137,7 +137,11 @@ document.getElementById("form").addEventListener("submit", function(e){
     document.getElementById("msg").innerText = "Guardado correctamente";
     form.reset();
     document.getElementById("operador").value = operadorActual;
-    cargarRegistros();
+    
+    // Pequeño delay para asegurar que la fila se guarde
+    setTimeout(() => {
+      cargarRegistros();
+    }, 500);
   })
   .catch(err => console.error("Error guardando:", err));
 });
@@ -152,7 +156,7 @@ function cargarRegistros(){
 
     const filtro = document.getElementById("filtroFecha").value;
 
-    data.slice(1).reverse().forEach(row => {
+    data.reverse().forEach(row => { // recorremos todo
       if(filtro && row[0] !== filtro) return;
 
       tbody.innerHTML += `
@@ -171,7 +175,6 @@ function cargarRegistros(){
   })
   .catch(err => console.error("Error cargando registros:", err));
 }
-
 </script>
 </body>
 </html>
