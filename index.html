@@ -7,22 +7,21 @@
 <style>
 body{
   margin:0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family:'Segoe UI',sans-serif;
   background:#f4f6f9;
 }
 
 header{
-  background: linear-gradient(90deg,#1e3c72,#2a5298);
+  background:linear-gradient(90deg,#1e3c72,#2a5298);
   color:white;
   padding:20px;
   text-align:center;
   font-size:22px;
   font-weight:bold;
-  letter-spacing:1px;
 }
 
 .container{
-  max-width:900px;
+  max-width:1100px;
   margin:30px auto;
   padding:20px;
 }
@@ -35,30 +34,13 @@ header{
   margin-bottom:30px;
 }
 
-.card h2{
-  margin-top:0;
-  color:#2a5298;
-}
-
-label{
-  font-weight:600;
-  font-size:14px;
-}
-
 input, select{
   width:100%;
   padding:10px;
   margin:8px 0 15px 0;
   border-radius:8px;
   border:1px solid #ddd;
-  font-size:14px;
   box-sizing:border-box;
-}
-
-select{
-  appearance:none;
-  background:white url("data:image/svg+xml;utf8,<svg fill='%232a5298' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 10px center;
-  background-size:15px;
 }
 
 button{
@@ -68,51 +50,63 @@ button{
   padding:12px;
   width:100%;
   border-radius:8px;
-  font-size:16px;
   cursor:pointer;
-  transition:0.3s;
 }
 
 button:hover{
   background:#1e3c72;
 }
 
-.footer{
-  text-align:center;
-  font-size:12px;
-  color:#888;
-  margin-top:20px;
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th{
+  background:#2a5298;
+  color:white;
+  padding:8px;
+}
+
+td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+}
+
+tr:hover{
+  background:#f1f5ff;
+}
+
+.scroll{
+  max-height:400px;
+  overflow:auto;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-Sistema de Registro de Producción
-</header>
+<header>Sistema de Registro de Producción</header>
 
 <div class="container">
 
 <div class="card">
-<h2>Nuevo Registro</h2>
+<h3>Nuevo Registro</h3>
 
 <form id="form">
 
-<label>Nombre del Operador</label>
-<input type="text" id="operador" placeholder="Ingrese nombre del operador" required>
+<input type="text" id="operador" placeholder="Nombre del Operador" required>
 
-<label>Exportadora</label>
 <select id="exportadora" required>
-  <option value="">Seleccione exportadora</option>
+  <option value="">Exportadora</option>
   <option value="Fruclem">Fruclem</option>
   <option value="JHB">JHB</option>
   <option value="Talamaya">Talamaya</option>
 </select>
 
-<label>Categoría</label>
 <select id="categoria" required>
-  <option value="">Seleccione categoría</option>
+  <option value="">Categoría</option>
   <option value="Premium">Premium</option>
   <option value="Extra">Extra</option>
   <option value="Fancy">Fancy</option>
@@ -120,52 +114,87 @@ Sistema de Registro de Producción
   <option value="Granel">Granel</option>
 </select>
 
-<label>Salida</label>
 <select id="salida" required>
-  <option value="">Seleccione salida</option>
+  <option value="">Salida</option>
 </select>
 
-<label>Calibre</label>
-<input type="text" id="calibre" placeholder="Ej: 2J, 3J, XL..." required>
+<input type="text" id="calibre" placeholder="Calibre" required>
+<input type="number" id="peso" placeholder="Peso (kg)" step="0.01" required>
 
-<label>Peso (kg)</label>
-<input type="number" id="peso" step="0.01" placeholder="Ej: 12.5" required>
-
-<button type="submit">Guardar Registro</button>
+<button type="submit">Guardar</button>
 
 </form>
 </div>
 
-<div class="footer">
-Sistema desarrollado para control interno de producción
+<div class="card">
+<h3>Registros</h3>
+<div class="scroll">
+<table id="tabla">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Usuario</th>
+<th>Exportadora</th>
+<th>Salida</th>
+<th>Calibre</th>
+<th>Categoria</th>
+<th>Peso</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
 </div>
 
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYIW4trU7sCaayBkHUq0Zt2kRI2gQ19MO6u_LtG-NCFZFIPi099zJa_RI-SOargict/exec";
-
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuMioGviiA6o8jzvFWCMT-CGR2sq9GHrQAHmsCNPkRV3IOlKKUS0kXT50f6Y5bH83y/exec";
 const form = document.getElementById("form");
+const tablaBody = document.querySelector("#tabla tbody");
 const salidaSelect = document.getElementById("salida");
 
-/* Generar Salidas del 1 al 41 */
-for(let i = 1; i <= 41; i++){
-  let option = document.createElement("option");
-  option.value = i;
-  option.text = "Salida " + i;
+/* Generar salidas 1 a 41 */
+for(let i=1;i<=41;i++){
+  let option=document.createElement("option");
+  option.value=i;
+  option.text="Salida "+i;
   salidaSelect.appendChild(option);
 }
 
-form.addEventListener("submit", function(e){
+/* Cargar datos */
+function cargarDatos(){
+  fetch(SCRIPT_URL)
+  .then(res=>res.json())
+  .then(data=>{
+    tablaBody.innerHTML="";
+    for(let i=1;i<data.length;i++){
+      let row=data[i];
+      let tr=document.createElement("tr");
+
+      row.forEach(cell=>{
+        let td=document.createElement("td");
+        td.textContent=cell;
+        tr.appendChild(td);
+      });
+
+      tablaBody.appendChild(tr);
+    }
+  });
+}
+
+/* Guardar */
+form.addEventListener("submit",function(e){
   e.preventDefault();
 
-  const data = {
-    operador: document.getElementById("operador").value,
-    exportadora: document.getElementById("exportadora").value,
-    categoria: document.getElementById("categoria").value,
-    salida: document.getElementById("salida").value,
-    calibre: document.getElementById("calibre").value,
-    peso: document.getElementById("peso").value
+  const data={
+    operador:operador.value,
+    exportadora:exportadora.value,
+    categoria:categoria.value,
+    salida:salida.value,
+    calibre:calibre.value,
+    peso:peso.value
   };
 
   fetch(SCRIPT_URL,{
@@ -175,17 +204,13 @@ form.addEventListener("submit", function(e){
   .then(res=>res.json())
   .then(response=>{
     if(response.status==="success"){
-      alert("Registro guardado correctamente");
       form.reset();
-    }else{
-      alert("Error: "+response.message);
+      cargarDatos();
     }
-  })
-  .catch(error=>{
-    alert("Error de conexión");
-    console.error(error);
   });
 });
+
+cargarDatos();
 </script>
 
 </body>
