@@ -51,15 +51,13 @@ th{
 
 <input type="text" id="exportadora" placeholder="Exportadora" required>
 
-<select id="salida" required>
-  <option value="">Seleccione salida</option>
-</select>
+<select id="salida" required></select>
 
 <input type="text" id="calibre" placeholder="Calibre" required>
 
 <input type="text" id="categoria" placeholder="Categoría" required>
 
-<input type="number" id="peso" placeholder="Peso (kg)" required>
+<input type="number" id="peso" placeholder="Peso (kg)" step="0.01" required>
 
 <button type="submit">Guardar</button>
 
@@ -71,10 +69,12 @@ th{
 
 <script>
 
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxzTq-ZetGGskFJ2y6LNIv6d5WeXVZtZ8YLks-U0tKe_rpx44WR9lOsR2KJpw8rggpn/exec"; // 
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxzTq-ZetGGskFJ2y6LNIv6d5WeXVZtZ8YLks-U0tKe_rpx44WR9lOsR2KJpw8rggpn/exec";
 
 // 🔹 Generar salidas 1 a 41
 const salidaSelect = document.getElementById("salida");
+
+salidaSelect.innerHTML = '<option value="">Seleccione salida</option>';
 
 for (let i = 1; i <= 41; i++) {
   let option = document.createElement("option");
@@ -94,24 +94,32 @@ document.getElementById("formulario").addEventListener("submit", function(e){
     salida: document.getElementById("salida").value,
     calibre: document.getElementById("calibre").value,
     categoria: document.getElementById("categoria").value,
-    peso: document.getElementById("peso").value
+    peso: parseFloat(document.getElementById("peso").value)
   };
 
   fetch(URL_SCRIPT, {
     method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(datos)
   })
   .then(res => res.json())
   .then(response => {
 
     if(response.status === "success"){
-      alert("Registro guardado");
+      alert("Registro guardado correctamente");
       document.getElementById("formulario").reset();
       cargarRegistros();
     } else {
-      alert("Error al guardar");
+      alert("Error al guardar: " + response.message);
     }
 
+  })
+  .catch(error => {
+    alert("Error de conexión");
+    console.error(error);
   });
 
 });
@@ -131,7 +139,7 @@ function cargarRegistros() {
         return;
       }
 
-      // Encabezado
+      // Encabezados
       let encabezado = "<tr>";
       data[0].forEach(columna => {
         encabezado += `<th>${columna}</th>`;
@@ -140,7 +148,7 @@ function cargarRegistros() {
 
       tabla.innerHTML += encabezado;
 
-      // 🔥 Últimos registros arriba
+      // 🔥 Mostrar últimos registros primero
       for (let i = data.length - 1; i > 0; i--) {
 
         let fila = "<tr>";
@@ -153,6 +161,9 @@ function cargarRegistros() {
         tabla.innerHTML += fila;
       }
 
+    })
+    .catch(error => {
+      console.error("Error cargando registros:", error);
     });
 }
 
