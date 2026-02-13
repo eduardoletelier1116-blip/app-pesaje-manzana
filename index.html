@@ -158,53 +158,41 @@ const salidaSelect = document.getElementById("salida");
 for(let i=1;i<=41;i++){
   let option=document.createElement("option");
   option.value=i;
-  option.text="Salida "+i;
+  option.text=i; // solo número
   salidaSelect.appendChild(option);
 }
 
-function cargarRegistros() {
+/* Cargar Registros (ÚLTIMOS ARRIBA) */
+function cargarRegistros(){
 
-  fetch(URL_SCRIPT)
-    .then(response => response.json())
-    .then(data => {
+  fetch(SCRIPT_URL)
+  .then(res=>res.json())
+  .then(data=>{
 
-      const tabla = document.getElementById("tablaRegistros");
-      tabla.innerHTML = "";
+    tablaBody.innerHTML="";
 
-      if (!data || data.length <= 1) {
-        tabla.innerHTML = "<tr><td colspan='8'>Sin registros</td></tr>";
-        return;
-      }
+    if(!data || data.length<=1){
+      tablaBody.innerHTML="<tr><td colspan='8'>Sin registros</td></tr>";
+      return;
+    }
 
-      // 🔹 Encabezados
-      let encabezado = "<tr>";
-      data[0].forEach(columna => {
-        encabezado += `<th>${columna}</th>`;
-      });
-      encabezado += "</tr>";
+    // quitar encabezado y dar vuelta
+    const registros=data.slice(1).reverse();
 
-      tabla.innerHTML = encabezado;
+    registros.forEach(fila=>{
+      let tr=document.createElement("tr");
 
-      // 🔥 CLAVE: invertir el array (excepto encabezado)
-      const registros = data.slice(1).reverse();
-
-      registros.forEach(filaData => {
-
-        let fila = "<tr>";
-
-        filaData.forEach(celda => {
-          fila += `<td>${celda}</td>`;
-        });
-
-        fila += "</tr>";
-        tabla.innerHTML += fila;
-
+      fila.forEach(celda=>{
+        let td=document.createElement("td");
+        td.textContent=celda;
+        tr.appendChild(td);
       });
 
-    })
-    .catch(error => {
-      console.error("Error cargando registros:", error);
+      tablaBody.appendChild(tr);
     });
+
+  })
+  .catch(err=>console.error("Error:",err));
 }
 
 /* Guardar */
@@ -222,20 +210,25 @@ document.getElementById("form").addEventListener("submit",function(e){
 
   fetch(SCRIPT_URL,{
     method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
     body:JSON.stringify(data)
   })
   .then(res=>res.json())
   .then(response=>{
     if(response.status==="success"){
       this.reset();
-      cargarDatos();
+      cargarRegistros(); // 🔥 correcto
     }
   });
 });
 
-cargarDatos();
+/* Cargar al iniciar */
+cargarRegistros();
 
 </script>
+
 
 </body>
 </html>
