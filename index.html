@@ -2,171 +2,192 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Registro Pesaje Manzana</title>
+<title>Registro de Producción</title>
 
 <style>
-body { font-family: Arial; text-align: center; background:#f2f2f2; }
-.container { margin-top:20px; }
-input, select {
-  font-size:18px;
-  padding:8px;
-  margin:6px;
-  width:220px;
+body{
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background:#f4f6f9;
 }
-#guardar {
-  background:green;
+
+header{
+  background: linear-gradient(90deg,#1e3c72,#2a5298);
   color:white;
-  width:220px;
-  height:60px;
+  padding:20px;
+  text-align:center;
   font-size:22px;
+  font-weight:bold;
+  letter-spacing:1px;
 }
-table {
-  margin:20px auto;
-  border-collapse: collapse;
-  width:95%;
+
+.container{
+  max-width:900px;
+  margin:30px auto;
+  padding:20px;
+}
+
+.card{
   background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom:30px;
 }
-th, td {
-  border:1px solid #ccc;
-  padding:8px;
+
+.card h2{
+  margin-top:0;
+  color:#2a5298;
+}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin:8px 0 15px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
   font-size:14px;
 }
-th {
-  background:#4CAF50;
+
+button{
+  background:#2a5298;
   color:white;
+  border:none;
+  padding:12px;
+  width:100%;
+  border-radius:8px;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  background:#1e3c72;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+th{
+  background:#2a5298;
+  color:white;
+  padding:10px;
+  text-align:left;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+}
+
+tr:hover{
+  background:#f1f5ff;
+}
+
+.footer{
+  text-align:center;
+  font-size:12px;
+  color:#888;
+  margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
+<header>
+Sistema de Registro de Producción
+</header>
+
 <div class="container">
-<h2>Registro Pesaje 🍎</h2>
 
-<input type="text" id="usuario" placeholder="Nombre Operador"><br>
+<div class="card">
+<h2>Nuevo Registro</h2>
 
-<select id="exportadora">
-  <option value="">Seleccionar Exportadora</option>
-  <option>Fruclem</option>
-  <option>JHB</option>
-  <option>Talamaya</option>
-</select><br>
+<form id="form">
 
-<select id="salida">
-  <option value="">Seleccionar Salida</option>
-</select><br>
+<label>Exportadora</label>
+<input type="text" id="exportadora" required>
 
-<input type="text" id="calibre" placeholder="Ingresar Calibre"><br>
+<label>Salida</label>
+<input type="text" id="salida" required>
 
-<select id="categoria">
-  <option value="">Seleccionar Categoría</option>
-  <option>Premium</option>
-  <option>Extra</option>
-  <option>Fancy</option>
-  <option>Choice</option>
-  <option>Granel</option>
-</select><br>
+<label>Calibre</label>
+<input type="text" id="calibre" required>
 
-<input type="number" id="peso" placeholder="Peso (kg)" step="0.01"><br>
+<label>Categoría</label>
+<input type="text" id="categoria" required>
 
-<button id="guardar" onclick="guardar()">GUARDAR</button>
+<label>Cantidad</label>
+<input type="number" id="cantidad" required>
 
-<p id="mensaje"></p>
+<button type="submit">Guardar Registro</button>
+
+</form>
 </div>
 
-<h3>Últimos Registros</h3>
+<div class="card">
+<h2>Registros Guardados</h2>
 
-<table>
+<table id="tabla">
 <thead>
 <tr>
-<th>Fecha / Hora</th>
-<th>Usuario</th>
+<th>Fecha</th>
 <th>Exportadora</th>
 <th>Salida</th>
 <th>Calibre</th>
-<th>Categoria</th>
-<th>Peso</th>
+<th>Categoría</th>
+<th>Cantidad</th>
 </tr>
 </thead>
-<tbody id="tablaRegistros"></tbody>
+<tbody>
+</tbody>
 </table>
 
-<script>
+</div>
 
+<div class="footer">
+Sistema desarrollado para control de producción
+</div>
+
+</div>
+
+<script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNusidlf2j9qDe_XeMBDuggQna2-766CSWHAPUUZQ6R0bx0A5yQNqTcxUG-AXsnE_6/exec";
 
-// Generar salidas 1 a 41
-for(let i=1; i<=41; i++){
-  let option = document.createElement("option");
-  option.text = i;
-  option.value = i;
-  document.getElementById("salida").add(option);
-}
+const form = document.getElementById("form");
 
-function guardar(){
-  var usuario = document.getElementById("usuario").value.trim();
-  var exportadora = document.getElementById("exportadora").value;
-  var salida = document.getElementById("salida").value;
-  var calibre = document.getElementById("calibre").value.trim();
-  var categoria = document.getElementById("categoria").value;
-  var peso = document.getElementById("peso").value;
+form.addEventListener("submit", function(e){
+  e.preventDefault();
 
-  if(!usuario || !exportadora || !salida || !calibre || !categoria || !peso){
-    alert("Complete todos los campos");
-    return;
-  }
+  const data = {
+    exportadora: document.getElementById("exportadora").value,
+    salida: document.getElementById("salida").value,
+    calibre: document.getElementById("calibre").value,
+    categoria: document.getElementById("categoria").value,
+    cantidad: document.getElementById("cantidad").value
+  };
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      usuario: usuario,
-      exportadora: exportadora,
-      salida: salida,
-      calibre: calibre,
-      categoria: categoria,
-      peso: peso
-    })
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    body:JSON.stringify(data)
   })
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("mensaje").innerHTML = "Registro Guardado ✅";
-    document.getElementById("calibre").value = "";
-    document.getElementById("peso").value = "";
-    cargarTabla();
+  .then(res=>res.json())
+  .then(response=>{
+    if(response.status==="success"){
+      alert("Registro guardado correctamente");
+      form.reset();
+    }else{
+      alert("Error: "+response.message);
+    }
   })
-  .catch(error => {
-    document.getElementById("mensaje").innerHTML = "Error al guardar ❌";
+  .catch(error=>{
+    alert("Error de conexión");
   });
-}
-
-function cargarTabla(){
-  fetch(SCRIPT_URL)
-  .then(res => res.json())
-  .then(data => {
-    let tabla = document.getElementById("tablaRegistros");
-    tabla.innerHTML = "";
-    
-    data.slice(-20).reverse().forEach(fila => {
-      let fechaHora = fila[0] + " " + fila[1];
-
-      let row = `<tr>
-        <td>${fechaHora}</td>
-        <td>${fila[2]}</td>
-        <td>${fila[3]}</td>
-        <td>${fila[4]}</td>
-        <td>${fila[5]}</td>
-        <td>${fila[6]}</td>
-        <td>${fila[7]}</td>
-      </tr>`;
-      
-      tabla.innerHTML += row;
-    });
-  });
-}
-
-cargarTabla();
-setInterval(cargarTabla, 5000);
-
+});
 </script>
 
 </body>
