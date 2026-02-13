@@ -57,10 +57,19 @@ td{padding:6px;border-bottom:1px solid #eee}
 <option>Choice</option>
 <option>Granel</option>
 </select>
+<select id="variedad" required>
+<option value="">Variedad</option>
+<option>Royal Gala</option>
+<option>Red Delicious</option>
+<option>Granny</option>
+<option>Fuji</option>
+<option>Pink Lady</option>
+</select>
 <select id="salida" required>
 <option value="">Salida</option>
 </select>
 <input type="text" id="calibre" placeholder="Calibre" required>
+<input type="text" id="lote" placeholder="Lote">
 <input type="text" id="peso" placeholder="Peso (kg)" required>
 <button type="submit">Guardar</button>
 <p id="msg" class="success"></p>
@@ -75,7 +84,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 <thead>
 <tr>
 <th>Fecha</th><th>Hora</th><th>Usuario</th><th>Exportadora</th>
-<th>Salida</th><th>Calibre</th><th>Categoria</th><th>Peso</th>
+<th>Salida</th><th>Calibre</th><th>Categoria</th><th>Variedad</th><th>Lote</th><th>Peso</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
@@ -88,7 +97,7 @@ td{padding:6px;border-bottom:1px solid #eee}
 
 <script>
 // URL de tu Apps Script
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycby7Vr0mtyI43dCaZM1OB4QdcbnFSz7rQlx4oPl1Y5Q-ps5AHuxoVuUMlWaLe4g41GzS/exec";
+const SCRIPT_URL="PEGA_AQUI_TU_NUEVO_EXEC";
 
 // Generar salidas automáticamente del 1 al 41
 const salidaSelect = document.getElementById("salida");
@@ -135,6 +144,8 @@ document.getElementById("form").addEventListener("submit", function(e){
     salida: document.getElementById("salida").value,
     calibre: document.getElementById("calibre").value,
     categoria: document.getElementById("categoria").value,
+    variedad: document.getElementById("variedad").value,
+    lote: document.getElementById("lote").value,
     peso: document.getElementById("peso").value
   };
 
@@ -152,7 +163,7 @@ document.getElementById("form").addEventListener("submit", function(e){
     document.getElementById("msg").innerText = "Guardado correctamente";
     form.reset();
     document.getElementById("operador").value = operadorActual;
-    setTimeout(cargarRegistros, 500); // Pequeño delay
+    setTimeout(cargarRegistros, 500);
   })
   .catch(err => console.error("Error guardando:", err));
 });
@@ -180,6 +191,8 @@ function cargarRegistros(){
       <td>${row[5]}</td>
       <td>${row[6]}</td>
       <td>${row[7]}</td>
+      <td>${row[8]}</td>
+      <td>${row[9]}</td>
       </tr>
       `;
     });
