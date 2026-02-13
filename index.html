@@ -5,19 +5,34 @@
 <title>Registro Pesaje Manzana</title>
 <style>
 body { font-family: Arial; text-align: center; background:#f2f2f2; }
-.container { margin-top:40px; }
+.container { margin-top:20px; }
 input, select {
-  font-size:20px;
-  padding:10px;
-  margin:10px;
-  width:250px;
+  font-size:18px;
+  padding:8px;
+  margin:6px;
+  width:220px;
 }
 #guardar {
   background:green;
   color:white;
-  width:250px;
-  height:70px;
-  font-size:24px;
+  width:220px;
+  height:60px;
+  font-size:22px;
+}
+table {
+  margin:20px auto;
+  border-collapse: collapse;
+  width:90%;
+  background:white;
+}
+th, td {
+  border:1px solid #ccc;
+  padding:8px;
+  font-size:14px;
+}
+th {
+  background:#4CAF50;
+  color:white;
 }
 </style>
 </head>
@@ -33,7 +48,7 @@ input, select {
   <option>Fruclem</option>
   <option>JHB</option>
   <option>Talamaya</option>
-</select>
+</select><br>
 
 <select id="salida">
   <option value="">Seleccionar Salida</option>
@@ -57,9 +72,27 @@ input, select {
 <p id="mensaje"></p>
 </div>
 
+<h3>Registros del Día</h3>
+
+<table>
+<thead>
+<tr>
+<th>Hora</th>
+<th>Usuario</th>
+<th>Exportadora</th>
+<th>Salida</th>
+<th>Calibre</th>
+<th>Categoria</th>
+<th>Peso</th>
+</tr>
+</thead>
+<tbody id="tablaRegistros">
+</tbody>
+</table>
+
 <script>
 
-// Generar salidas 1 a 41 automáticamente
+// Generar salidas 1-41
 for(let i=1; i<=41; i++){
   let option = document.createElement("option");
   option.text = i;
@@ -80,7 +113,7 @@ function guardar(){
     return;
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbyDtZvjpfypIIRSIkVEQ6tM0DRZvTPDhPhAMb0aOphFEUkRX32cvWhDaPaYFDpjdov8/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbw6souKdPOA3h7jvA6cCCXeZ3qpG3QOvSicRNXsfjohbs8oeG4VM90h_vcU3Jm7kvR2/exec", {
     method: "POST",
     body: JSON.stringify({
       usuario: usuario,
@@ -96,11 +129,35 @@ function guardar(){
     document.getElementById("mensaje").innerHTML = "Registro Guardado ✅";
     document.getElementById("calibre").value = "";
     document.getElementById("peso").value = "";
-  })
-  .catch(error => {
-    document.getElementById("mensaje").innerHTML = "Error al guardar ❌";
+    cargarTabla();
   });
 }
+
+function cargarTabla(){
+  fetch("https://script.google.com/macros/s/AKfycbw6souKdPOA3h7jvA6cCCXeZ3qpG3QOvSicRNXsfjohbs8oeG4VM90h_vcU3Jm7kvR2/exec")
+  .then(res => res.json())
+  .then(data => {
+    let tabla = document.getElementById("tablaRegistros");
+    tabla.innerHTML = "";
+    
+    data.slice(-20).reverse().forEach(fila => {
+      let row = `<tr>
+        <td>${fila[1]}</td>
+        <td>${fila[2]}</td>
+        <td>${fila[3]}</td>
+        <td>${fila[4]}</td>
+        <td>${fila[5]}</td>
+        <td>${fila[6]}</td>
+        <td>${fila[7]}</td>
+      </tr>`;
+      tabla.innerHTML += row;
+    });
+  });
+}
+
+cargarTabla();
+setInterval(cargarTabla, 5000);
+
 </script>
 
 </body>
