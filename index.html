@@ -26,14 +26,17 @@ td{padding:6px;border-bottom:1px solid #eee}
 
 <div class="container">
 
+<!-- LOGIN -->
 <div class="card" id="loginCard">
 <h3>Login Operador</h3>
 <input type="text" id="loginOperador" placeholder="Nombre operador">
 <button onclick="login()">Ingresar</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
+<!-- FORMULARIO -->
 <div class="card">
 <h3>Nuevo Registro</h3>
 <form id="form">
@@ -52,14 +55,9 @@ td{padding:6px;border-bottom:1px solid #eee}
 <option>Choice</option>
 <option>Granel</option>
 </select>
-// Generar salidas 1 a 41
-const salidaSelect = document.getElementById("salida");
-for(let i=1;i<=41;i++){
-  let option=document.createElement("option");
-  option.value=i;
-  option.text=i;
-  salidaSelect.appendChild(option);
-}
+<select id="salida" required>
+<option value="">Salida</option>
+</select>
 <input type="text" id="calibre" placeholder="Calibre" required>
 <input type="number" id="peso" placeholder="Peso" required>
 <button type="submit">Guardar</button>
@@ -67,12 +65,14 @@ for(let i=1;i<=41;i++){
 </form>
 </div>
 
+<!-- RESUMEN DEL DÍA -->
 <div class="card">
 <h3>Resumen del Día</h3>
 <p id="totalDia"></p>
 <canvas id="grafico"></canvas>
 </div>
 
+<!-- REGISTROS -->
 <div class="card">
 <h3>Registros</h3>
 <input type="date" id="filtroFecha" onchange="cargarRegistros()">
@@ -87,15 +87,27 @@ for(let i=1;i<=41;i++){
 </table>
 </div>
 
-</div>
+</div> <!-- fin app -->
 
-</div>
+</div> <!-- fin container -->
 
 <script>
 
+// URL de tu Apps Script
 const SCRIPT_URL="PEGA_AQUI_TU_NUEVO_EXEC";
+
 let chart;
 
+// Generar salidas automáticamente del 1 al 41
+const salidaSelect = document.getElementById("salida");
+for(let i=1;i<=41;i++){
+  let option = document.createElement("option");
+  option.value = i;
+  option.text = i;
+  salidaSelect.appendChild(option);
+}
+
+// LOGIN
 function login(){
   const nombre=document.getElementById("loginOperador").value;
   if(!nombre) return alert("Ingrese nombre");
@@ -106,16 +118,22 @@ function login(){
   cargarRegistros();
 }
 
+// GUARDAR REGISTRO
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
   const data={
     operador:document.getElementById("operador").value,
-    exportadora:exportadora.value,
-    salida:salida.value,
-    calibre:calibre.value,
-    categoria:categoria.value,
-    peso:peso.value
+    exportadora:document.getElementById("exportadora").value,
+    salida:document.getElementById("salida").value,
+    calibre:document.getElementById("calibre").value,
+    categoria:document.getElementById("categoria").value,
+    peso:document.getElementById("peso").value
   };
+
+  if(!data.salida){
+    alert("Debe seleccionar una salida válida");
+    return;
+  }
 
   fetch(SCRIPT_URL,{method:"POST",body:new URLSearchParams(data)})
   .then(res=>res.json())
@@ -127,6 +145,7 @@ document.getElementById("form").addEventListener("submit",function(e){
   });
 });
 
+// CARGAR REGISTROS Y GENERAR RESUMEN Y GRÁFICO
 function cargarRegistros(){
 fetch(SCRIPT_URL)
 .then(res=>res.json())
@@ -136,7 +155,11 @@ fetch(SCRIPT_URL)
   let total=0;
   let categorias={};
 
+  const filtro=document.getElementById("filtroFecha").value;
+
   data.slice(1).reverse().forEach(row=>{
+    if(filtro && row[0]!==filtro) return; // filtrar por fecha
+
     total+=parseFloat(row[7]);
     categorias[row[6]]=(categorias[row[6]]||0)+parseFloat(row[7]);
 
@@ -169,6 +192,7 @@ fetch(SCRIPT_URL)
 });
 }
 
+// ELIMINAR REGISTRO
 function eliminar(id){
 if(!confirm("¿Eliminar registro?")) return;
 fetch(SCRIPT_URL+"?id="+id,{method:"DELETE"})
