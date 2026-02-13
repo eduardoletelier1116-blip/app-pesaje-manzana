@@ -201,25 +201,6 @@ function cargarRegistros(){
   });
 }
 
-    // quitar encabezado y dar vuelta
-    const registros=data.slice(1).reverse();
-
-    registros.forEach(fila=>{
-      let tr=document.createElement("tr");
-
-      fila.forEach(celda=>{
-        let td=document.createElement("td");
-        td.textContent=celda;
-        tr.appendChild(td);
-      });
-
-      tablaBody.appendChild(tr);
-    });
-
-  })
-  .catch(err=>console.error("Error:",err));
-}
-
 /* Guardar */
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
