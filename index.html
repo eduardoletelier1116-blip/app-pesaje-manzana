@@ -166,7 +166,12 @@ for(let i=1;i<=41;i++){
 function cargarRegistros(){
 
   fetch(SCRIPT_URL)
-  .then(res=>res.json())
+  .then(res=>{
+    if(!res.ok){
+      throw new Error("Error HTTP "+res.status);
+    }
+    return res.json();
+  })
   .then(data=>{
 
     tablaBody.innerHTML="";
@@ -175,6 +180,26 @@ function cargarRegistros(){
       tablaBody.innerHTML="<tr><td colspan='8'>Sin registros</td></tr>";
       return;
     }
+
+    const registros=data.slice(1).reverse();
+
+    registros.forEach(fila=>{
+      const tr=document.createElement("tr");
+
+      fila.forEach(celda=>{
+        const td=document.createElement("td");
+        td.textContent=celda;
+        tr.appendChild(td);
+      });
+
+      tablaBody.appendChild(tr);
+    });
+
+  })
+  .catch(err=>{
+    console.error("Error cargando:",err);
+  });
+}
 
     // quitar encabezado y dar vuelta
     const registros=data.slice(1).reverse();
