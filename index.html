@@ -113,7 +113,7 @@ function guardar(){
     return;
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbxc44FeL3yyoju_xorIjmTrstmld0fU_V_57ffR3b7bvS3En6_r_DXlqR7FegkAgAxy/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbyGwsMJMvuI2FAzZKi034PgZm2sQET3gsjIwacDgLb4M7sMH1ne5nXRUGA2P_-2LFZN/exec", {
     method: "POST",
     body: JSON.stringify({
       usuario: usuario,
@@ -134,7 +134,7 @@ function guardar(){
 }
 
 function cargarTabla(){
-  fetch("https://script.google.com/macros/s/AKfycbxc44FeL3yyoju_xorIjmTrstmld0fU_V_57ffR3b7bvS3En6_r_DXlqR7FegkAgAxy/exec")
+  fetch("https://script.google.com/macros/s/AKfycbyGwsMJMvuI2FAzZKi034PgZm2sQET3gsjIwacDgLb4M7sMH1ne5nXRUGA2P_-2LFZN/exec")
   .then(res => res.json())
   .then(data => {
     let tabla = document.getElementById("tablaRegistros");
