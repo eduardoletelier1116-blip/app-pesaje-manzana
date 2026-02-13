@@ -209,11 +209,12 @@ document.getElementById("form").addEventListener("submit",function(e){
   };
 
   fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify(data)
+  method:"POST",
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify(data)
+})
   })
   .then(res=>res.json())
   .then(response=>{
