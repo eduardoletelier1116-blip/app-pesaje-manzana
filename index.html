@@ -168,7 +168,7 @@ function cargarDatos(){
   .then(res=>res.json())
   .then(data=>{
     tablaBody.innerHTML="";
-    for(let i=1;i<data.length;i++){
+    for(let i=data.length-1;i>0;i--){
       let row=data[i];
       let tr=document.createElement("tr");
 
