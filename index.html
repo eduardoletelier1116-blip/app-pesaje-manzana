@@ -158,7 +158,7 @@ const salidaSelect = document.getElementById("salida");
 for(let i=1;i<=41;i++){
   let option=document.createElement("option");
   option.value=i;
-  option.text=i; // solo número
+  option.text=i;
   salidaSelect.appendChild(option);
 }
 
@@ -176,7 +176,6 @@ function cargarRegistros(){
       return;
     }
 
-    // quitar encabezado y dar vuelta
     const registros=data.slice(1).reverse();
 
     registros.forEach(fila=>{
@@ -194,8 +193,8 @@ function cargarRegistros(){
   })
   .catch(err=>console.error("Error:",err));
 }
- 
-  /* Guardar */
+
+/* Guardar */
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
 
@@ -209,26 +208,25 @@ document.getElementById("form").addEventListener("submit",function(e){
   };
 
   fetch(SCRIPT_URL,{
-  method:"POST",
-  headers:{
-    "Content-Type":"application/json"
-  },
-  body:JSON.stringify(data)
-})
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(data)
   })
+  .then(res=>res.json())
   .then(response=>{
     if(response.status==="success"){
       this.reset();
-      cargarRegistros(); // 🔥 correcto
+      cargarRegistros();
+    } else {
+      console.error("Error backend:", response);
     }
-  });
+  })
+  .catch(err=>console.error("Error POST:",err));
 });
 
 /* Cargar al iniciar */
 cargarRegistros();
 
 </script>
-
-
-</body>
-</html>
