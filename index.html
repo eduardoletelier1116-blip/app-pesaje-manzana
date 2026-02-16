@@ -5,7 +5,32 @@
 <title>Registro de Pesos</title>
 <style>
 body{font-family:Segoe UI;margin:0;background:#f4f6f9}
-header{background:#1e3c72;color:white;padding:20px;text-align:center;font-size:22px}
+header{
+  background:#1e3c72;
+  color:white;
+  padding:20px;
+  text-align:center;
+  font-size:22px;
+  position:relative;
+}
+
+.Sin Fondo{
+  position:absolute;
+  left:20px;
+  top:50%;
+  transform:translateY(-50%);
+  height:50px;   /* tamaño del logo */
+}
+
+.codigo-empresa{
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:14px;
+  font-weight:500;
+}
+
 .container{max-width:1200px;margin:20px auto;padding:20px}
 .card{background:white;padding:20px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);margin-bottom:20px}
 input,select{width:100%;padding:8px;margin:5px 0;border-radius:6px;border:1px solid #ddd}
