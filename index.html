@@ -146,6 +146,9 @@ window.addEventListener("load", function(){
   if(exportadora) document.getElementById("exportadora").value = exportadora;
   if(variedad)    document.getElementById("variedad").value = variedad;
   if(lote)        document.getElementById("lote").value = lote;
+
+  // Cargar los registros automáticamente al iniciar
+  cargarRegistros();
 });
 
 /* LOGIN */
@@ -235,9 +238,16 @@ function cargarRegistros(){
     tbody.innerHTML = "";
 
     const filtro = document.getElementById("filtroFecha").value;
+    const today = new Date().toLocaleDateString("en-GB"); // Obtener la fecha de hoy en formato dd/mm/yyyy
 
     data.reverse().forEach(row => {
-      if(filtro && row[0] !== filtro) return;
+      const rowDate = row[0]; // Suponiendo que la fecha está en la primera columna (index 0)
+
+      // Si hay un filtro de fecha, filtra por él
+      if(filtro && rowDate !== filtro) return;
+
+      // Si no hay filtro, solo muestra los registros del día actual
+      if (!filtro && rowDate !== today) return;
 
       tbody.innerHTML += `
       <tr>
