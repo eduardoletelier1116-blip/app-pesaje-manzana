@@ -243,11 +243,14 @@ function cargarRegistros(){
     data.reverse().forEach(row => {
       const rowDate = row[0]; // Suponiendo que la fecha está en la primera columna (index 0)
 
+      // Formatear la fecha de registro para asegurarse de que tenga el formato correcto
+      const rowDateFormatted = new Date(rowDate).toLocaleDateString("en-GB");
+
       // Si hay un filtro de fecha, filtra por él
-      if(filtro && rowDate !== filtro) return;
+      if(filtro && rowDateFormatted !== filtro) return;
 
       // Si no hay filtro, solo muestra los registros del día actual
-      if (!filtro && rowDate !== today) return;
+      if (!filtro && rowDateFormatted !== today) return;
 
       tbody.innerHTML += `
       <tr>
