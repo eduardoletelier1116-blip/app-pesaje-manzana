@@ -157,7 +157,6 @@
 
         <div class="card">
           <h3>Registros</h3>
-          <input type="date" id="filtroFecha" onchange="cargarRegistros()">
           <table>
             <thead>
               <tr>
@@ -287,11 +286,16 @@
             const tbody = document.getElementById("tabla");
             tbody.innerHTML = "";
 
-            const filtro = document.getElementById("filtroFecha").value;
+            // Filtrar registros solo de hoy
+            const registrosFiltrados = filtrarRegistrosPorDia(data);
 
-            data.reverse().forEach(row => {
-              if (filtro && row[0] !== filtro) return;
+            // Si no hay registros de hoy, mostrar mensaje en la tabla
+            if (registrosFiltrados.length === 0) {
+              tbody.innerHTML = `<tr><td colspan="10">No hay registros para hoy.</td></tr>`;
+            }
 
+            // Mostrar registros
+            registrosFiltrados.reverse().forEach(row => {
               tbody.innerHTML += `
                 <tr>
                   <td>${row[0]}</td>
@@ -309,6 +313,15 @@
             });
           })
           .catch(err => console.error("Error cargando registros:", err));
+      }
+
+      // Función de filtrado de registros por fecha (solo muestra los de hoy)
+      function filtrarRegistrosPorDia(registros) {
+        const hoy = new Date();
+        const fechaHoy = formatDate(hoy);  // Fecha de hoy en formato YYYY-MM-DD
+
+        // Compara solo los registros de hoy
+        return registros.filter(row => formatDate(row[0]) === fechaHoy);
       }
     </script>
   </body>
