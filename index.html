@@ -1,282 +1,352 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>Registro de Pesos</title>
     <style>
-        body {
-            font-family: Segoe UI;
-            margin: 0;
-            background: #f4f6f9;
-        }
-        header {
-            background: #1e3c72;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 22px;
-            position: relative;
-        }
-        .logo {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 50px;
-        }
-        .codigo-empresa {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-        button {
-            background: #2a5298;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #1e3c72;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        th {
-            background: #2a5298;
-            color: white;
-            padding: 6px;
-        }
-        td {
-            padding: 6px;
-            border-bottom: 1px solid #eee;
-        }
-        .success {
-            color: green;
-            font-weight: bold;
-        }
-        .hidden {
-            display: none;
-        }
+      body {
+        font-family: Segoe UI;
+        margin: 0;
+        background: #f4f6f9;
+      }
+
+      header {
+        background: #1e3c72;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 22px;
+        position: relative;
+      }
+
+      .logo {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 50px;
+      }
+
+      .codigo-empresa {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+      }
+
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+      }
+
+      button {
+        background: #2a5298;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #1e3c72;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th {
+        background: #2a5298;
+        color: white;
+        padding: 6px;
+      }
+
+      td {
+        padding: 6px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .success {
+        color: green;
+        font-weight: bold;
+      }
+
+      .hidden {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+
+  <body>
     <header>
-        <img src="Fondo Blanco.jpg" class="logo" alt="Fresh-Pak">
-        Registro de Pesos
-        <div class="codigo-empresa">R02 POE 29</div>
+      <!-- Asegúrate de que la ruta de la imagen sea correcta -->
+      <img src="ruta-correcta/Fondo Blanco.jpg" class="logo" alt="Fresh-Pak">
+      Registro de Pesos
+      <div class="codigo-empresa">R02 POE 29</div>
     </header>
+
     <div class="container">
-        <div class="card" id="loginCard">
-            <h3>Ingreso</h3>
-            <input type="text" id="nombreOperador" placeholder="Nombre operador">
-            <input type="password" id="claveOperador" placeholder="Clave operador">
-            <button onclick="ingresarOperador()">Operador</button>
-            <button onclick="modoVisualizacion()">Visualización</button>
-            <p id="msgLogin" style="color:red;"></p>
-        </div>
-        <div id="app" class="hidden">
-            <div class="card" id="formCard">
-                <h3>Nuevo Registro</h3>
-                <form id="form">
-                    <input type="text" id="operador" readonly>
-                    <select id="exportadora" required>
-                        <option value="">Exportadora</option>
-                        <option>Fruclem</option>
-                        <option>JHB</option>
-                        <option>Talamaya</option>
-                    </select>
-                    <select id="categoria" required>
-                        <option value="">Categoría</option>
-                        <option>Premium</option>
-                        <option>Extra</option>
-                        <option>Fancy</option>
-                        <option>Choice</option>
-                        <option>Granel</option>
-                    </select>
-                    <select id="variedad" required>
-                        <option value="">Variedad</option>
-                        <option>Royal Gala</option>
-                        <option>Red Delicious</option>
-                        <option>Granny</option>
-                        <option>Fuji</option>
-                        <option>Pink Lady</option>
-                    </select>
-                    <select id="salida" required>
-                        <option value="">Salida</option>
-                    </select>
-                    <input type="text" id="calibre" placeholder="Calibre" required>
-                    <input type="text" id="lote" placeholder="Lote">
-                    <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" required>
-                    <button type="submit">Guardar</button>
-                    <p id="msg" class="success"></p>
-                </form>
-            </div>
-            <div class="card">
-                <h3>Registros</h3>
-                <input type="date" id="filtroFecha" onchange="cargarRegistros()">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Usuario</th>
-                            <th>Exportadora</th>
-                            <th>Salida</th>
-                            <th>Calibre</th>
-                            <th>Categoria</th>
-                            <th>Variedad</th>
-                            <th>Lote</th>
-                            <th>Peso</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla"></tbody>
-                </table>
-            </div>
-        </div>
+      <div class="card" id="loginCard">
+        <h3>Ingreso</h3>
+        <input type="text" id="nombreOperador" placeholder="Nombre operador">
+        <input type="password" id="claveOperador" placeholder="Clave operador">
+        <button onclick="ingresarOperador()">Operador</button>
+        <p id="msgLogin" style="color:red;"></p>
+      </div>
+
+      <div class="card hidden" id="formCard">
+        <h3>Nuevo Registro</h3>
+        <form id="form">
+          <input type="text" id="operador" readonly>
+          <select id="exportadora" required>
+            <option value="">Exportadora</option>
+            <option>Fruclem</option>
+            <option>JHB</option>
+            <option>Talamaya</option>
+          </select>
+          <select id="categoria" required>
+            <option value="">Categoría</option>
+            <option>Premium</option>
+            <option>Extra</option>
+            <option>Fancy</option>
+            <option>Choice</option>
+            <option>Granel</option>
+          </select>
+          <select id="variedad" required>
+            <option value="">Variedad</option>
+            <option>Royal Gala</option>
+            <option>Red Delicious</option>
+            <option>Granny</option>
+            <option>Fuji</option>
+            <option>Pink Lady</option>
+          </select>
+          <select id="salida" required>
+            <option value="">Salida</option>
+          </select>
+          <input type="text" id="calibre" placeholder="Calibre" required>
+          <input type="text" id="lote" placeholder="Lote">
+          <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" required>
+          <button type="submit">Guardar</button>
+          <p id="msg" class="success"></p>
+        </form>
+      </div>
+
+      <div class="card" id="registrosCard">
+        <h3>Registros</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Usuario</th>
+              <th>Exportadora</th>
+              <th>Salida</th>
+              <th>Calibre</th>
+              <th>Categoria</th>
+              <th>Variedad</th>
+              <th>Lote</th>
+              <th>Peso</th>
+            </tr>
+          </thead>
+          <tbody id="tabla"></tbody>
+        </table>
+      </div>
     </div>
+
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEWxdRCwj549evEfZ47u6m2uDKj08gAvKN5zlUd67axC9kbmOVrx-Xd3O7hCggPErL/exec";
-        const salidaSelect = document.getElementById("salida");
-        for (let i = 1; i <= 41; i++) {
-            let option = document.createElement("option");
-            option.value = i;
-            option.text = i;
-            salidaSelect.appendChild(option);
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEWxdRCwj549evEfZ47u6m2uDKj08gAvKN5zlUd67axC9kbmOVrx-Xd3O7hCggPErL/exec";
+      const salidaSelect = document.getElementById("salida");
+
+      for (let i = 1; i <= 41; i++) {
+        let option = document.createElement("option");
+        option.value = i;
+        option.text = i;
+        salidaSelect.appendChild(option);
+      }
+
+      let nombreActual = "";
+      let operadorData = {
+        operador: "",
+        exportadora: "",
+        variedad: "",
+        lote: ""
+      };
+
+      // Función de formateo de fecha
+      function formatDate(date) {
+        // Verificamos si 'date' es un objeto Date
+        if (date instanceof Date) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${year}-${month}-${day}`;
         }
 
-        let modoActual = "visualizacion";
-        let nombreActual = "";
+        // Si la fecha es un string en formato 'DD/MM/YYYY'
+        if (typeof date === 'string' && date.includes('/')) {
+          const parts = date.split('/');  // Asume que el formato es DD/MM/YYYY
+          const day = String(parts[0]).padStart(2, '0');
+          const month = String(parts[1]).padStart(2, '0');
+          const year = parts[2];
+          return `${year}-${month}-${day}`;
+        }
 
-        /* RESTAURAR VALORES GUARDADOS */
-        window.addEventListener("load", function () {
-            const exportadora = localStorage.getItem("exportadora");
-            const variedad = localStorage.getItem("variedad");
-            const lote = localStorage.getItem("lote");
-            if (exportadora) document.getElementById("exportadora").value = exportadora;
-            if (variedad) document.getElementById("variedad").value = variedad;
-            if (lote) document.getElementById("lote").value = lote;
+        // Si no es un formato esperado, retornamos la fecha original
+        return date;
+      }
+
+      // Filtra registros solo para el día actual
+      function filtrarRegistrosPorDia(registros) {
+        const hoy = new Date();
+        const fechaHoy = formatDate(hoy); 
+
+        console.log("Fecha de hoy:", fechaHoy);
+        console.log("Registros recibidos:", registros);
+
+        registros.forEach((row, index) => {
+          console.log(`Registro ${index} - Fecha: ${row[0]}`);
         });
 
-        /* LOGIN */
-        function ingresarOperador() {
-            const nombre = document.getElementById("nombreOperador").value.trim();
-            const clave = document.getElementById("claveOperador").value.trim();
-            if (!nombre || !clave) {
-                document.getElementById("msgLogin").innerText = "Ingrese nombre y clave";
-                return;
-            }
-            if (clave === "fresh") {
-                modoActual = "operador";
-                nombreActual = nombre;
-                document.getElementById("loginCard").classList.add("hidden");
-                document.getElementById("app").classList.remove("hidden");
-                document.getElementById("formCard").classList.remove("hidden");
-                document.getElementById("operador").value = nombreActual;
-                cargarRegistros();
-                document.getElementById("salida").focus();
+        return registros.filter(row => {
+          const fechaRegistro = formatDate(row[0]); 
+          console.log(`Comparando fecha del registro ${row[0]} con la fecha de hoy ${fechaHoy}`);
+          return fechaRegistro === fechaHoy;
+        });
+      }
+
+      window.addEventListener("load", function () {
+        const exportadora = localStorage.getItem("exportadora");
+        const variedad = localStorage.getItem("variedad");
+        const lote = localStorage.getItem("lote");
+
+        if (exportadora) document.getElementById("exportadora").value = exportadora;
+        if (variedad) document.getElementById("variedad").value = variedad;
+        if (lote) document.getElementById("lote").value = lote;
+
+        cargarRegistros();
+      });
+
+      function ingresarOperador() {
+        const nombre = document.getElementById("nombreOperador").value.trim();
+        const clave = document.getElementById("claveOperador").value.trim();
+
+        if (!nombre || !clave) {
+          document.getElementById("msgLogin").innerText = "Ingrese nombre y clave";
+          return;
+        }
+
+        if (clave === "fresh") {
+          operadorData.operador = nombre;
+          document.getElementById("operador").value = operadorData.operador;
+
+          document.getElementById("loginCard").classList.add("hidden");
+          document.getElementById("registrosCard").classList.remove("hidden");
+          document.getElementById("formCard").classList.remove("hidden");
+          document.getElementById("app").classList.remove("hidden");
+          document.getElementById("salida").focus();
+
+          cargarRegistros();
+        } else {
+          document.getElementById("msgLogin").innerText = "Clave incorrecta";
+        }
+      }
+
+      document.getElementById("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const data = {
+          operador: operadorData.operador,
+          exportadora: document.getElementById("exportadora").value,
+          salida: document.getElementById("salida").value,
+          calibre: document.getElementById("calibre").value,
+          categoria: document.getElementById("categoria").value,
+          variedad: document.getElementById("variedad").value,
+          lote: document.getElementById("lote").value,
+          peso: document.getElementById("peso").value
+        };
+
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          body: new URLSearchParams(data)
+        })
+          .then(res => res.json())
+          .then(() => {
+            document.getElementById("msg").innerText = "Guardado correctamente";
+
+            localStorage.setItem("exportadora", data.exportadora);
+            localStorage.setItem("variedad", data.variedad);
+            localStorage.setItem("lote", data.lote);
+
+            document.getElementById("calibre").value = "";
+            document.getElementById("peso").value = "";
+            document.getElementById("categoria").value = "";
+            document.getElementById("salida").value = "";
+            document.getElementById("operador").value = operadorData.operador;
+
+            document.getElementById("salida").focus();
+
+            setTimeout(cargarRegistros, 400);
+          })
+          .catch(err => console.error("Error guardando:", err));
+      });
+
+      function cargarRegistros() {
+        fetch(SCRIPT_URL)
+          .then(res => res.json())
+          .then(data => {
+            const tbody = document.getElementById("tabla");
+            tbody.innerHTML = "";
+
+            const registrosFiltrados = filtrarRegistrosPorDia(data);
+
+            console.log("Registros filtrados para hoy:", registrosFiltrados);
+
+            if (registrosFiltrados.length === 0) {
+              tbody.innerHTML = `<tr><td colspan="10">No hay registros para hoy.</td></tr>`;
             } else {
-                document.getElementById("msgLogin").innerText = "Clave incorrecta";
+              registrosFiltrados.reverse().forEach(row => {
+                tbody.innerHTML += `
+                  <tr>
+                    <td>${row[0]}</td>
+                    <td>${row[1]}</td>
+                    <td>${row[2]}</td>
+                    <td>${row[3]}</td>
+                    <td>${row[4]}</td>
+                    <td>${row[5]}</td>
+                    <td>${row[6]}</td>
+                    <td>${row[7]}</td>
+                    <td>${row[8]}</td>
+                    <td>${row[9]}</td>
+                  </tr>
+                `;
+              });
             }
-        }
-
-        function modoVisualizacion() {
-            modoActual = "visualizacion";
-            document.getElementById("loginCard").classList.add("hidden");
-            document.getElementById("app").classList.remove("hidden");
-            document.getElementById("formCard").classList.add("hidden");
-            cargarRegistros();
-        }
-
-        /* GUARDAR REGISTRO */
-        document.getElementById("form").addEventListener("submit", function (e) {
-            e.preventDefault();
-            if (modoActual !== "operador") return;
-            const data = {
-                operador: nombreActual,
-                exportadora: document.getElementById("exportadora").value,
-                salida: document.getElementById("salida").value,
-                calibre: document.getElementById("calibre").value,
-                categoria: document.getElementById("categoria").value,
-                variedad: document.getElementById("variedad").value,
-                lote: document.getElementById("lote").value,
-                peso: document.getElementById("peso").value
-            };
-
-            fetch(SCRIPT_URL, {
-                method: "POST",
-                body: new URLSearchParams(data)
-            })
-            .then(res => res.json())
-            .then(() => {
-                document.getElementById("msg").innerText = "Guardado correctamente";
-                /* GUARDAR CAMPOS PERSISTENTES */
-                localStorage.setItem("exportadora", data.exportadora);
-                localStorage.setItem("variedad", data.variedad);
-                localStorage.setItem("lote", data.lote);
-                /* LIMPIAR SOLO CAMPOS VARIABLES */
-                document.getElementById("calibre").value = "";
-                document.getElementById("peso").value = "";
-                document.getElementById("categoria").value = "";
-                document.getElementById("salida").value = "";
-                document.getElementById("operador").value = nombreActual;
-                document.getElementById("salida").focus();
-                setTimeout(cargarRegistros, 400);
-            })
-            .catch(err => console.error("Error guardando:", err));
-        });
-
-        /* CARGAR REGISTROS */
-        function cargarRegistros() {
-            fetch(SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.getElementById("tabla");
-                tbody.innerHTML = "";
-                const filtro = document.getElementById("filtroFecha").value;
-                data.reverse().forEach(row => {
-                    if (filtro && row[0] !== filtro) return;
-                    tbody.innerHTML += `<tr>
-                        <td>${row[0]}</td>
-                        <td>${row[1]}</td>
-                        <td>${row[2]}</td>
-                        <td>${row[3]}</td>
-                        <td>${row[4]}</td>
-                        <td>${row[5]}</td>
-                        <td>${row[6]}</td>
-                        <td>${row[7]}</td>
-                        <td>${row[8]}</td>
-                        <td>${row[9]}</td>
-                    </tr>`;
-                });
-            })
-            .catch(err => console.error("Error cargando registros:", err));
-        }
+          })
+          .catch(err => console.error("Error cargando registros:", err));
+      }
     </script>
-</body>
+  </body>
 </html>
