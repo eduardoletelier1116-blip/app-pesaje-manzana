@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8">
     <title>Registro de Pesos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
-        font-family: Segoe UI;
+        font-family: Segoe UI, sans-serif;
         margin: 0;
         background: #f4f6f9;
       }
@@ -57,6 +58,7 @@
         margin: 5px 0;
         border-radius: 6px;
         border: 1px solid #ddd;
+        box-sizing: border-box;
       }
 
       button {
@@ -97,12 +99,23 @@
       .hidden {
         display: none;
       }
+
+      .chart-container {
+        position: relative;
+        width: 100%;
+        height: 420px;
+      }
+
+      .estado-sync {
+        font-size: 12px;
+        color: #666;
+        margin-top: 8px;
+      }
     </style>
   </head>
 
   <body>
     <header>
-      <!-- Asegúrate de que la ruta de la imagen sea correcta -->
       <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo" alt="Fresh-Pak">
       Registro de Pesos
       <div class="codigo-empresa">R02 POE 29</div>
@@ -121,6 +134,7 @@
         <h3>Nuevo Registro</h3>
         <form id="form">
           <input type="text" id="operador" readonly>
+
           <select id="exportadora" required>
             <option value="">Exportadora</option>
             <option>Fruclem</option>
@@ -128,6 +142,7 @@
             <option>JHB</option>
             <option>Talamaya</option>
           </select>
+
           <select id="categoria" required>
             <option value="">Categoría</option>
             <option>Premium</option>
@@ -137,6 +152,7 @@
             <option>Granel</option>
             <option>CEM</option>
           </select>
+
           <select id="variedad" required>
             <option value="">Variedad</option>
             <option>Royal Gala</option>
@@ -145,12 +161,15 @@
             <option>Fuji</option>
             <option>Pink Lady</option>
           </select>
+
           <select id="salida" required>
             <option value="">Salida</option>
           </select>
+
           <input type="text" id="calibre" placeholder="Calibre" required>
           <input type="text" id="lote" placeholder="Lote">
           <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" required>
+
           <button type="submit">Guardar</button>
           <p id="msg" class="success"></p>
         </form>
@@ -167,7 +186,7 @@
               <th>Exportadora</th>
               <th>Salida</th>
               <th>Calibre</th>
-              <th>Categoria</th>
+              <th>Categoría</th>
               <th>Variedad</th>
               <th>Lote</th>
               <th>Peso</th>
@@ -175,12 +194,24 @@
           </thead>
           <tbody id="tabla"></tbody>
         </table>
+        <div class="estado-sync" id="estadoSync">Sincronizando...</div>
+      </div>
+
+      <div class="card" id="graficoCard">
+        <h3>Seguimiento de pesos por calibre</h3>
+        <div class="chart-container">
+          <canvas id="graficoPesos"></canvas>
+        </div>
       </div>
     </div>
 
     <script>
       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEWxdRCwj549evEfZ47u6m2uDKj08gAvKN5zlUd67axC9kbmOVrx-Xd3O7hCggPErL/exec";
       const salidaSelect = document.getElementById("salida");
+      const estadoSync = document.getElementById("estadoSync");
+      let grafico = null;
+      let autoRefresh = null;
+      let cargando = false;
 
       for (let i = 1; i <= 41; i++) {
         let option = document.createElement("option");
@@ -189,7 +220,6 @@
         salidaSelect.appendChild(option);
       }
 
-      let nombreActual = "";
       let operadorData = {
         operador: "",
         exportadora: "",
@@ -197,46 +227,218 @@
         lote: ""
       };
 
-      // Función de formateo de fecha
       function formatDate(date) {
-        // Verificamos si 'date' es un objeto Date
         if (date instanceof Date) {
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0");
           const year = date.getFullYear();
           return `${year}-${month}-${day}`;
         }
 
-        // Si la fecha es un string en formato 'DD/MM/YYYY'
-        if (typeof date === 'string' && date.includes('/')) {
-          const parts = date.split('/');  // Asume que el formato es DD/MM/YYYY
-          const day = String(parts[0]).padStart(2, '0');
-          const month = String(parts[1]).padStart(2, '0');
-          const year = parts[2];
-          return `${year}-${month}-${day}`;
+        if (typeof date === "string" && date.includes("/")) {
+          const parts = date.split("/");
+          if (parts.length === 3) {
+            const day = String(parts[0]).padStart(2, "0");
+            const month = String(parts[1]).padStart(2, "0");
+            const year = parts[2];
+            return `${year}-${month}-${day}`;
+          }
         }
 
-        // Si no es un formato esperado, retornamos la fecha original
         return date;
       }
 
-      // Filtra registros solo para el día actual
       function filtrarRegistrosPorDia(registros) {
         const hoy = new Date();
-        const fechaHoy = formatDate(hoy); 
-
-        console.log("Fecha de hoy:", fechaHoy);
-        console.log("Registros recibidos:", registros);
-
-        registros.forEach((row, index) => {
-          console.log(`Registro ${index} - Fecha: ${row[0]}`);
-        });
+        const fechaHoy = formatDate(hoy);
 
         return registros.filter(row => {
-          const fechaRegistro = formatDate(row[0]); 
-          console.log(`Comparando fecha del registro ${row[0]} con la fecha de hoy ${fechaHoy}`);
+          if (!row || row.length < 10) return false;
+
+          const fechaOriginal = row[0];
+          if (String(fechaOriginal).toLowerCase() === "fecha") return false;
+
+          const fechaRegistro = formatDate(fechaOriginal);
           return fechaRegistro === fechaHoy;
         });
+      }
+
+      function generarColor(index) {
+        const colores = [
+          "#1e3c72",
+          "#2a5298",
+          "#4caf50",
+          "#ff9800",
+          "#e91e63",
+          "#9c27b0",
+          "#009688",
+          "#f44336",
+          "#795548",
+          "#607d8b",
+          "#3f51b5",
+          "#8bc34a",
+          "#ffc107",
+          "#673ab7",
+          "#00bcd4"
+        ];
+        return colores[index % colores.length];
+      }
+
+      function actualizarTabla(registros) {
+        const tbody = document.getElementById("tabla");
+        tbody.innerHTML = "";
+
+        if (!registros || registros.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="10">No hay registros para hoy.</td></tr>`;
+          return;
+        }
+
+        [...registros].reverse().forEach(row => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${row[0]}</td>
+              <td>${row[1]}</td>
+              <td>${row[2]}</td>
+              <td>${row[3]}</td>
+              <td>${row[4]}</td>
+              <td>${row[5]}</td>
+              <td>${row[6]}</td>
+              <td>${row[7]}</td>
+              <td>${row[8]}</td>
+              <td>${row[9]}</td>
+            </tr>
+          `;
+        });
+      }
+
+      function actualizarGrafico(registros) {
+        const canvas = document.getElementById("graficoPesos");
+        const ctx = canvas.getContext("2d");
+
+        if (!registros || registros.length === 0) {
+          if (grafico) {
+            grafico.destroy();
+            grafico = null;
+          }
+          return;
+        }
+
+        const gruposPorCalibre = {};
+
+        registros.forEach(row => {
+          const calibre = String(row[5]).trim();
+          const peso = parseFloat(String(row[9]).replace(",", "."));
+
+          if (!calibre || isNaN(peso)) return;
+
+          if (!gruposPorCalibre[calibre]) {
+            gruposPorCalibre[calibre] = [];
+          }
+
+          gruposPorCalibre[calibre].push(peso);
+        });
+
+        const maxCajas = Math.max(
+          ...Object.values(gruposPorCalibre).map(arr => arr.length),
+          0
+        );
+
+        const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
+
+        const calibresUnicos = Object.keys(gruposPorCalibre);
+
+        const datasets = calibresUnicos.map((calibre, index) => {
+          return {
+            label: `Calibre ${calibre}`,
+            data: gruposPorCalibre[calibre],
+            borderColor: generarColor(index),
+            backgroundColor: generarColor(index),
+            tension: 0.25,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            spanGaps: false
+          };
+        });
+
+        if (grafico) {
+          grafico.destroy();
+        }
+
+        grafico = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            interaction: {
+              mode: "nearest",
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                position: "top"
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(context) {
+                    return context[0].label;
+                  },
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.raw} kg`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Número de caja por calibre"
+                }
+              },
+              y: {
+                beginAtZero: false,
+                title: {
+                  display: true,
+                  text: "Peso (kg)"
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function cargarRegistros() {
+        if (cargando) return;
+        cargando = true;
+
+        fetch(SCRIPT_URL + "?t=" + new Date().getTime())
+          .then(res => res.json())
+          .then(data => {
+            const registrosFiltrados = filtrarRegistrosPorDia(data);
+            actualizarTabla(registrosFiltrados);
+            actualizarGrafico(registrosFiltrados);
+
+            const ahora = new Date();
+            estadoSync.innerText = "Última actualización: " + ahora.toLocaleTimeString("es-CL");
+          })
+          .catch(err => {
+            console.error("Error cargando registros:", err);
+            estadoSync.innerText = "Error al sincronizar";
+          })
+          .finally(() => {
+            cargando = false;
+          });
+      }
+
+      function iniciarAutoRefresh() {
+        if (autoRefresh) clearInterval(autoRefresh);
+        autoRefresh = setInterval(cargarRegistros, 3000);
       }
 
       window.addEventListener("load", function () {
@@ -249,6 +451,7 @@
         if (lote) document.getElementById("lote").value = lote;
 
         cargarRegistros();
+        iniciarAutoRefresh();
       });
 
       function ingresarOperador() {
@@ -267,7 +470,6 @@
           document.getElementById("loginCard").classList.add("hidden");
           document.getElementById("registrosCard").classList.remove("hidden");
           document.getElementById("formCard").classList.remove("hidden");
-          document.getElementById("app").classList.remove("hidden");
           document.getElementById("salida").focus();
 
           cargarRegistros();
@@ -310,45 +512,17 @@
 
             document.getElementById("salida").focus();
 
-            setTimeout(cargarRegistros, 400);
+            setTimeout(() => {
+              document.getElementById("msg").innerText = "";
+            }, 1500);
+
+            cargarRegistros();
           })
-          .catch(err => console.error("Error guardando:", err));
+          .catch(err => {
+            console.error("Error guardando:", err);
+            document.getElementById("msg").innerText = "Error al guardar";
+          });
       });
-
-      function cargarRegistros() {
-        fetch(SCRIPT_URL)
-          .then(res => res.json())
-          .then(data => {
-            const tbody = document.getElementById("tabla");
-            tbody.innerHTML = "";
-
-            const registrosFiltrados = filtrarRegistrosPorDia(data);
-
-            console.log("Registros filtrados para hoy:", registrosFiltrados);
-
-            if (registrosFiltrados.length === 0) {
-              tbody.innerHTML = `<tr><td colspan="10">No hay registros para hoy.</td></tr>`;
-            } else {
-              registrosFiltrados.reverse().forEach(row => {
-                tbody.innerHTML += `
-                  <tr>
-                    <td>${row[0]}</td>
-                    <td>${row[1]}</td>
-                    <td>${row[2]}</td>
-                    <td>${row[3]}</td>
-                    <td>${row[4]}</td>
-                    <td>${row[5]}</td>
-                    <td>${row[6]}</td>
-                    <td>${row[7]}</td>
-                    <td>${row[8]}</td>
-                    <td>${row[9]}</td>
-                  </tr>
-                `;
-              });
-            }
-          })
-          .catch(err => console.error("Error cargando registros:", err));
-      }
     </script>
   </body>
 </html>
