@@ -65,13 +65,43 @@
         background: #2a5298;
         color: white;
         border: none;
-        padding: 10px;
+        padding: 10px 14px;
         border-radius: 6px;
         cursor: pointer;
       }
 
       button:hover {
         background: #1e3c72;
+      }
+
+      .btn-secundario {
+        background: #6c757d;
+      }
+
+      .btn-secundario:hover {
+        background: #565e64;
+      }
+
+      .btn-peligro {
+        background: #c0392b;
+      }
+
+      .btn-peligro:hover {
+        background: #922b21;
+      }
+
+      .row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 10px;
+        align-items: end;
+      }
+
+      .row-2 {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: end;
       }
 
       table {
@@ -103,13 +133,48 @@
       .chart-container {
         position: relative;
         width: 100%;
-        height: 420px;
+        height: 460px;
       }
 
       .estado-sync {
         font-size: 12px;
         color: #666;
         margin-top: 8px;
+      }
+
+      .info-objetivos {
+        font-size: 12px;
+        color: #555;
+        margin-top: 10px;
+        line-height: 1.5;
+      }
+
+      .subtitulo {
+        margin-top: 0;
+        margin-bottom: 12px;
+      }
+
+      .acciones-regla {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+      }
+
+      .badge-config {
+        display: inline-block;
+        background: #eaf2ff;
+        color: #1e3c72;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      @media (max-width: 768px) {
+        .row-3,
+        .row-2 {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -128,6 +193,55 @@
         <input type="password" id="claveOperador" placeholder="Clave operador">
         <button onclick="ingresarOperador()">Operador</button>
         <p id="msgLogin" style="color:red;"></p>
+      </div>
+
+      <div class="card hidden" id="objetivosCard">
+        <h3 class="subtitulo">Objetivos del turno</h3>
+
+        <div class="row-3">
+          <div>
+            <label for="calibreDesde"><strong>Calibre desde</strong></label>
+            <input type="number" id="calibreDesde" placeholder="Ej: 72">
+          </div>
+
+          <div>
+            <label for="calibreHasta"><strong>Calibre hasta</strong></label>
+            <input type="number" id="calibreHasta" placeholder="Ej: 125">
+          </div>
+
+          <div>
+            <label for="pesoObjetivo"><strong>Peso objetivo (kg)</strong></label>
+            <input type="text" id="pesoObjetivo" placeholder="Ej: 19,1 o 19.1">
+          </div>
+
+          <div>
+            <button type="button" onclick="agregarReglaObjetivo()">Agregar regla</button>
+          </div>
+        </div>
+
+        <div style="margin-top:15px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th>Objetivo (kg)</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tablaObjetivos"></tbody>
+          </table>
+        </div>
+
+        <div class="row-2" style="margin-top:15px;">
+          <div>
+            <span class="badge-config" id="estadoObjetivos">Sin objetivos cargados para este turno</span>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn-secundario" onclick="cargarObjetivosEjemplo()">Cargar ejemplo</button>
+            <button type="button" class="btn-peligro" onclick="limpiarObjetivos()">Limpiar reglas</button>
+          </div>
+        </div>
       </div>
 
       <div class="card hidden" id="formCard">
@@ -202,6 +316,7 @@
         <div class="chart-container">
           <canvas id="graficoPesos"></canvas>
         </div>
+        <div class="info-objetivos" id="infoObjetivos">Objetivos activos del turno: sin definir</div>
       </div>
     </div>
 
@@ -209,9 +324,11 @@
       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEWxdRCwj549evEfZ47u6m2uDKj08gAvKN5zlUd67axC9kbmOVrx-Xd3O7hCggPErL/exec";
       const salidaSelect = document.getElementById("salida");
       const estadoSync = document.getElementById("estadoSync");
+
       let grafico = null;
       let autoRefresh = null;
       let cargando = false;
+      let reglasObjetivo = [];
 
       for (let i = 1; i <= 41; i++) {
         let option = document.createElement("option");
@@ -226,6 +343,12 @@
         variedad: "",
         lote: ""
       };
+
+      function normalizarNumero(valor) {
+        if (valor === null || valor === undefined) return NaN;
+        const limpio = String(valor).trim().replace(",", ".");
+        return parseFloat(limpio);
+      }
 
       function formatDate(date) {
         if (date instanceof Date) {
@@ -284,6 +407,148 @@
         return colores[index % colores.length];
       }
 
+      function guardarObjetivosEnLocalStorage() {
+        localStorage.setItem("reglasObjetivoTurno", JSON.stringify(reglasObjetivo));
+      }
+
+      function cargarObjetivosDesdeLocalStorage() {
+        try {
+          const guardado = localStorage.getItem("reglasObjetivoTurno");
+          const datos = guardado ? JSON.parse(guardado) : [];
+
+          reglasObjetivo = datos.map(r => ({
+            desde: parseInt(r.desde, 10),
+            hasta: parseInt(r.hasta, 10),
+            objetivo: Number(normalizarNumero(r.objetivo).toFixed(2))
+          })).filter(r =>
+            !isNaN(r.desde) &&
+            !isNaN(r.hasta) &&
+            !isNaN(r.objetivo)
+          );
+        } catch (e) {
+          reglasObjetivo = [];
+        }
+      }
+
+      function actualizarEstadoObjetivos() {
+        const estado = document.getElementById("estadoObjetivos");
+        const info = document.getElementById("infoObjetivos");
+
+        if (!reglasObjetivo.length) {
+          estado.innerText = "Sin objetivos cargados para este turno";
+          info.innerText = "Objetivos activos del turno: sin definir";
+          return;
+        }
+
+        estado.innerText = `${reglasObjetivo.length} regla(s) cargada(s) para este turno`;
+
+        const texto = reglasObjetivo
+          .map(r => `calibres ${r.desde}-${r.hasta} = ${Number(r.objetivo).toFixed(2)} kg`)
+          .join(" | ");
+
+        info.innerText = "Objetivos activos del turno: " + texto;
+      }
+
+      function renderTablaObjetivos() {
+        const tbody = document.getElementById("tablaObjetivos");
+        tbody.innerHTML = "";
+
+        if (!reglasObjetivo.length) {
+          tbody.innerHTML = `<tr><td colspan="4">No hay reglas cargadas.</td></tr>`;
+          actualizarEstadoObjetivos();
+          return;
+        }
+
+        reglasObjetivo
+          .sort((a, b) => a.desde - b.desde)
+          .forEach((regla, index) => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${regla.desde}</td>
+                <td>${regla.hasta}</td>
+                <td>${Number(regla.objetivo).toFixed(2)}</td>
+                <td>
+                  <div class="acciones-regla">
+                    <button type="button" class="btn-peligro" onclick="eliminarRegla(${index})">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+
+        actualizarEstadoObjetivos();
+      }
+
+      function agregarReglaObjetivo() {
+        const desde = parseInt(document.getElementById("calibreDesde").value, 10);
+        const hasta = parseInt(document.getElementById("calibreHasta").value, 10);
+        const objetivo = normalizarNumero(document.getElementById("pesoObjetivo").value);
+
+        if (isNaN(desde) || isNaN(hasta) || isNaN(objetivo)) {
+          alert("Completa calibre desde, calibre hasta y peso objetivo.");
+          return;
+        }
+
+        if (desde > hasta) {
+          alert("El calibre desde no puede ser mayor que el calibre hasta.");
+          return;
+        }
+
+        reglasObjetivo.push({
+          desde: desde,
+          hasta: hasta,
+          objetivo: Number(objetivo.toFixed(2))
+        });
+
+        reglasObjetivo.sort((a, b) => a.desde - b.desde);
+
+        guardarObjetivosEnLocalStorage();
+        renderTablaObjetivos();
+        cargarRegistros();
+
+        document.getElementById("calibreDesde").value = "";
+        document.getElementById("calibreHasta").value = "";
+        document.getElementById("pesoObjetivo").value = "";
+        document.getElementById("calibreDesde").focus();
+      }
+
+      function eliminarRegla(index) {
+        reglasObjetivo.splice(index, 1);
+        guardarObjetivosEnLocalStorage();
+        renderTablaObjetivos();
+        cargarRegistros();
+      }
+
+      function limpiarObjetivos() {
+        reglasObjetivo = [];
+        guardarObjetivosEnLocalStorage();
+        renderTablaObjetivos();
+        cargarRegistros();
+      }
+
+      function cargarObjetivosEjemplo() {
+        reglasObjetivo = [
+          { desde: 72, hasta: 125, objetivo: 19.1 },
+          { desde: 150, hasta: 216, objetivo: 20.1 }
+        ];
+        guardarObjetivosEnLocalStorage();
+        renderTablaObjetivos();
+        cargarRegistros();
+      }
+
+      function obtenerObjetivoPorCalibre(calibre) {
+        const calibreNum = parseInt(calibre, 10);
+        if (isNaN(calibreNum)) return null;
+
+        for (const regla of reglasObjetivo) {
+          if (calibreNum >= regla.desde && calibreNum <= regla.hasta) {
+            return Number(normalizarNumero(regla.objetivo).toFixed(2));
+          }
+        }
+
+        return null;
+      }
+
       function actualizarTabla(registros) {
         const tbody = document.getElementById("tabla");
         tbody.innerHTML = "";
@@ -315,6 +580,8 @@
         const canvas = document.getElementById("graficoPesos");
         const ctx = canvas.getContext("2d");
 
+        actualizarEstadoObjetivos();
+
         if (!registros || registros.length === 0) {
           if (grafico) {
             grafico.destroy();
@@ -327,7 +594,7 @@
 
         registros.forEach(row => {
           const calibre = String(row[5]).trim();
-          const peso = parseFloat(String(row[9]).replace(",", "."));
+          const peso = normalizarNumero(row[9]);
 
           if (!calibre || isNaN(peso)) return;
 
@@ -345,20 +612,45 @@
 
         const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
 
-        const calibresUnicos = Object.keys(gruposPorCalibre);
+        const calibresUnicos = Object.keys(gruposPorCalibre)
+          .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
 
-        const datasets = calibresUnicos.map((calibre, index) => {
-          return {
-            label: `Calibre ${calibre}`,
-            data: gruposPorCalibre[calibre],
-            borderColor: generarColor(index),
-            backgroundColor: generarColor(index),
+        const datasets = [];
+
+        calibresUnicos.forEach((calibre, index) => {
+          const colorBase = generarColor(index);
+          const pesos = gruposPorCalibre[calibre];
+
+          datasets.push({
+            label: `Calibre ${calibre} - Real`,
+            data: pesos,
+            borderColor: colorBase,
+            backgroundColor: colorBase,
             tension: 0.25,
             fill: false,
             pointRadius: 4,
             pointHoverRadius: 6,
-            spanGaps: false
-          };
+            spanGaps: false,
+            borderWidth: 2
+          });
+
+          const objetivo = obtenerObjetivoPorCalibre(calibre);
+
+          if (objetivo !== null) {
+            datasets.push({
+              label: `Calibre ${calibre} - Objetivo (${Number(objetivo).toFixed(2)} kg)`,
+              data: Array(pesos.length).fill(Number(objetivo.toFixed(2))),
+              borderColor: colorBase,
+              backgroundColor: colorBase,
+              borderDash: [8, 6],
+              tension: 0,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              spanGaps: false,
+              borderWidth: 2
+            });
+          }
         });
 
         if (grafico) {
@@ -450,6 +742,8 @@
         if (variedad) document.getElementById("variedad").value = variedad;
         if (lote) document.getElementById("lote").value = lote;
 
+        cargarObjetivosDesdeLocalStorage();
+        renderTablaObjetivos();
         cargarRegistros();
         iniciarAutoRefresh();
       });
@@ -470,8 +764,10 @@
           document.getElementById("loginCard").classList.add("hidden");
           document.getElementById("registrosCard").classList.remove("hidden");
           document.getElementById("formCard").classList.remove("hidden");
+          document.getElementById("objetivosCard").classList.remove("hidden");
           document.getElementById("salida").focus();
 
+          renderTablaObjetivos();
           cargarRegistros();
         } else {
           document.getElementById("msgLogin").innerText = "Clave incorrecta";
