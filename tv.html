@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Modo TV - Registro de Pesos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Segoe UI, sans-serif;
+        margin: 0;
+        background: #f4f6f9;
+        color: #1f2937;
+      }
+
+      header {
+        background: #1e3c72;
+        color: white;
+        padding: 18px 24px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: 600;
+        position: relative;
+      }
+
+      .logo {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 46px;
+      }
+
+      .codigo-empresa {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .main {
+        display: grid;
+        grid-template-columns: 2.2fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        height: calc(100vh - 96px);
+        box-sizing: border-box;
+      }
+
+      .panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        padding: 18px;
+        overflow: hidden;
+      }
+
+      .chart-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        gap: 12px;
+      }
+
+      .chart-title {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .chart-subinfo {
+        font-size: 13px;
+        color: #6b7280;
+        text-align: right;
+      }
+
+      .chart-container {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .sidebar {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 16px;
+        min-height: 0;
+      }
+
+      .mini-kpis {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .kpi {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .kpi-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+      }
+
+      .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .objetivos-box {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .objetivos-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .objetivos-texto {
+        font-size: 13px;
+        color: #4b5563;
+        line-height: 1.45;
+      }
+
+      .resumen-box {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .resumen-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .resumen-lista {
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .resumen-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        background: #fafafa;
+      }
+
+      .resumen-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .calibre-titulo {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e3c72;
+      }
+
+      .cajas-badge {
+        font-size: 12px;
+        background: #eaf2ff;
+        color: #1e3c72;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+
+      .resumen-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+      }
+
+      .dato {
+        background: white;
+        border-radius: 10px;
+        padding: 8px 10px;
+        border: 1px solid #edf2f7;
+      }
+
+      .dato-label {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 3px;
+      }
+
+      .dato-valor {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .desvio-ok {
+        color: #15803d;
+      }
+
+      .desvio-up {
+        color: #b45309;
+      }
+
+      .desvio-down {
+        color: #b91c1c;
+      }
+
+      .sin-datos {
+        color: #6b7280;
+        font-size: 14px;
+        padding: 20px 0;
+      }
+
+      @media (max-width: 1200px) {
+        .main {
+          grid-template-columns: 1fr;
+          height: auto;
+        }
+
+        .sidebar {
+          grid-template-rows: auto auto auto;
+        }
+
+        .chart-container {
+          height: 420px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo" alt="Fresh-Pak">
+      Modo TV - Registro de Pesos
+      <div class="codigo-empresa">R02 POE 29</div>
+    </header>
+
+    <div class="main">
+      <div class="panel chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Seguimiento de pesos por calibre</div>
+          <div class="chart-subinfo">
+            <div id="fechaHoy"></div>
+            <div id="estadoSync">Sincronizando...</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="graficoPesosTV"></canvas>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="mini-kpis">
+          <div class="kpi">
+            <div class="kpi-label">Cajas hoy</div>
+            <div class="kpi-value" id="kpiCajas">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Calibres activos</div>
+            <div class="kpi-value" id="kpiCalibres">0</div>
+          </div>
+        </div>
+
+        <div class="objetivos-box">
+          <div class="objetivos-title">Objetivos activos del turno</div>
+          <div class="objetivos-texto" id="infoObjetivosTV">Sin definir</div>
+        </div>
+
+        <div class="panel resumen-box" style="padding: 14px;">
+          <div class="resumen-title">Promedio por calibre</div>
+          <div class="resumen-lista" id="resumenCalibres"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEWxdRCwj549evEfZ47u6m2uDKj08gAvKN5zlUd67axC9kbmOVrx-Xd3O7hCggPErL/exec";
+
+      let graficoTV = null;
+      let cargando = false;
+      let autoRefresh = null;
+      let reglasObjetivo = [];
+
+      function normalizarNumero(valor) {
+        if (valor === null || valor === undefined) return NaN;
+        const limpio = String(valor).trim().replace(",", ".");
+        return parseFloat(limpio);
+      }
+
+      function formatDate(date) {
+        if (date instanceof Date) {
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const year = date.getFullYear();
+          return `${year}-${month}-${day}`;
+        }
+
+        if (typeof date === "string" && date.includes("/")) {
+          const parts = date.split("/");
+          if (parts.length === 3) {
+            const day = String(parts[0]).padStart(2, "0");
+            const month = String(parts[1]).padStart(2, "0");
+            const year = parts[2];
+            return `${year}-${month}-${day}`;
+          }
+        }
+
+        return date;
+      }
+
+      function filtrarRegistrosPorDia(registros) {
+        const hoy = new Date();
+        const fechaHoy = formatDate(hoy);
+
+        return registros.filter(row => {
+          if (!row || row.length < 10) return false;
+
+          const fechaOriginal = row[0];
+          if (String(fechaOriginal).toLowerCase() === "fecha") return false;
+
+          const fechaRegistro = formatDate(fechaOriginal);
+          return fechaRegistro === fechaHoy;
+        });
+      }
+
+      function generarColor(index) {
+        const colores = [
+          "#1e3c72",
+          "#2a5298",
+          "#4caf50",
+          "#ff9800",
+          "#e91e63",
+          "#9c27b0",
+          "#009688",
+          "#f44336",
+          "#795548",
+          "#607d8b",
+          "#3f51b5",
+          "#8bc34a",
+          "#ffc107",
+          "#673ab7",
+          "#00bcd4"
+        ];
+        return colores[index % colores.length];
+      }
+
+      function cargarObjetivosDesdeServidor() {
+        return fetch(SCRIPT_URL + "?tipo=objetivos&t=" + new Date().getTime())
+          .then(res => res.json())
+          .then(data => {
+            if (!Array.isArray(data)) {
+              reglasObjetivo = [];
+              return;
+            }
+
+            reglasObjetivo = data
+              .filter((row, index) => row && row.length >= 3 && index > 0)
+              .map(r => ({
+                desde: parseInt(r[0], 10),
+                hasta: parseInt(r[1], 10),
+                objetivo: Number(normalizarNumero(r[2]).toFixed(2))
+              }))
+              .filter(r =>
+                !isNaN(r.desde) &&
+                !isNaN(r.hasta) &&
+                !isNaN(r.objetivo)
+              );
+          })
+          .catch(err => {
+            console.error("Error cargando objetivos:", err);
+            reglasObjetivo = [];
+          });
+      }
+
+      function obtenerObjetivoPorCalibre(calibre) {
+        const calibreNum = parseInt(calibre, 10);
+        if (isNaN(calibreNum)) return null;
+
+        for (const regla of reglasObjetivo) {
+          if (calibreNum >= regla.desde && calibreNum <= regla.hasta) {
+            return Number(normalizarNumero(regla.objetivo).toFixed(2));
+          }
+        }
+
+        return null;
+      }
+
+      function actualizarTextoObjetivos() {
+        const box = document.getElementById("infoObjetivosTV");
+
+        if (!reglasObjetivo.length) {
+          box.innerText = "Sin definir";
+          return;
+        }
+
+        box.innerText = reglasObjetivo
+          .map(r => `Calibres ${r.desde}-${r.hasta}: ${Number(r.objetivo).toFixed(2)} kg`)
+          .join(" | ");
+      }
+
+      function construirResumenPorCalibre(registros) {
+        const resumen = {};
+
+        registros.forEach(row => {
+          const calibre = String(row[5]).trim();
+          const peso = normalizarNumero(row[9]);
+
+          if (!calibre || isNaN(peso)) return;
+
+          if (!resumen[calibre]) {
+            resumen[calibre] = {
+              pesos: []
+            };
+          }
+
+          resumen[calibre].pesos.push(peso);
+        });
+
+        const lista = Object.keys(resumen)
+          .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+          .map(calibre => {
+            const pesos = resumen[calibre].pesos;
+            const cajas = pesos.length;
+            const promedio = pesos.reduce((a, b) => a + b, 0) / cajas;
+            const objetivo = obtenerObjetivoPorCalibre(calibre);
+            const desvio = objetivo !== null ? promedio - objetivo : null;
+
+            return {
+              calibre,
+              cajas,
+              promedio,
+              objetivo,
+              desvio
+            };
+          });
+
+        return lista;
+      }
+
+      function renderResumenCalibres(resumen) {
+        const contenedor = document.getElementById("resumenCalibres");
+        contenedor.innerHTML = "";
+
+        if (!resumen.length) {
+          contenedor.innerHTML = `<div class="sin-datos">No hay registros para hoy.</div>`;
+          return;
+        }
+
+        resumen.forEach(item => {
+          let claseDesvio = "";
+          let textoDesvio = "--";
+
+          if (item.desvio !== null) {
+            const valor = item.desvio.toFixed(2);
+            textoDesvio = `${item.desvio >= 0 ? "+" : ""}${valor} kg`;
+
+            if (Math.abs(item.desvio) <= 0.05) {
+              claseDesvio = "desvio-ok";
+            } else if (item.desvio > 0.05) {
+              claseDesvio = "desvio-up";
+            } else {
+              claseDesvio = "desvio-down";
+            }
+          }
+
+          contenedor.innerHTML += `
+            <div class="resumen-card">
+              <div class="resumen-top">
+                <div class="calibre-titulo">Calibre ${item.calibre}</div>
+                <div class="cajas-badge">${item.cajas} caja(s)</div>
+              </div>
+
+              <div class="resumen-grid">
+                <div class="dato">
+                  <div class="dato-label">Promedio</div>
+                  <div class="dato-valor">${item.promedio.toFixed(2)} kg</div>
+                </div>
+
+                <div class="dato">
+                  <div class="dato-label">Objetivo</div>
+                  <div class="dato-valor">${item.objetivo !== null ? item.objetivo.toFixed(2) + " kg" : "--"}</div>
+                </div>
+
+                <div class="dato">
+                  <div class="dato-label">Desvío</div>
+                  <div class="dato-valor ${claseDesvio}">${textoDesvio}</div>
+                </div>
+
+                <div class="dato">
+                  <div class="dato-label">Calibre</div>
+                  <div class="dato-valor">${item.calibre}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      function actualizarKPIs(registros, resumen) {
+        document.getElementById("kpiCajas").innerText = registros.length;
+        document.getElementById("kpiCalibres").innerText = resumen.length;
+
+        const ahora = new Date();
+        document.getElementById("fechaHoy").innerText = ahora.toLocaleDateString("es-CL");
+      }
+
+      function actualizarGraficoTV(registros) {
+        const canvas = document.getElementById("graficoPesosTV");
+        const ctx = canvas.getContext("2d");
+
+        if (!registros || registros.length === 0) {
+          if (graficoTV) {
+            graficoTV.destroy();
+            graficoTV = null;
+          }
+          return;
+        }
+
+        const gruposPorCalibre = {};
+
+        registros.forEach(row => {
+          const calibre = String(row[5]).trim();
+          const peso = normalizarNumero(row[9]);
+
+          if (!calibre || isNaN(peso)) return;
+
+          if (!gruposPorCalibre[calibre]) {
+            gruposPorCalibre[calibre] = [];
+          }
+
+          gruposPorCalibre[calibre].push(peso);
+        });
+
+        const maxCajas = Math.max(
+          ...Object.values(gruposPorCalibre).map(arr => arr.length),
+          0
+        );
+
+        const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
+
+        const calibresUnicos = Object.keys(gruposPorCalibre)
+          .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+        const datasets = [];
+
+        calibresUnicos.forEach((calibre, index) => {
+          const colorBase = generarColor(index);
+          const pesos = gruposPorCalibre[calibre];
+
+          datasets.push({
+            label: `Calibre ${calibre} - Real`,
+            data: pesos,
+            borderColor: colorBase,
+            backgroundColor: colorBase,
+            tension: 0.25,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            spanGaps: false,
+            borderWidth: 2
+          });
+
+          const objetivo = obtenerObjetivoPorCalibre(calibre);
+
+          if (objetivo !== null) {
+            datasets.push({
+              label: `Calibre ${calibre} - Objetivo (${Number(objetivo).toFixed(2)} kg)`,
+              data: Array(pesos.length).fill(Number(objetivo.toFixed(2))),
+              borderColor: colorBase,
+              backgroundColor: colorBase,
+              borderDash: [8, 6],
+              tension: 0,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              spanGaps: false,
+              borderWidth: 2
+            });
+          }
+        });
+
+        if (graficoTV) {
+          graficoTV.destroy();
+        }
+
+        graficoTV = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            interaction: {
+              mode: "nearest",
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  boxWidth: 18,
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(context) {
+                    return context[0].label;
+                  },
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.raw} kg`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Número de caja por calibre"
+                }
+              },
+              y: {
+                beginAtZero: false,
+                title: {
+                  display: true,
+                  text: "Peso (kg)"
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function cargarDatosTV() {
+        if (cargando) return;
+        cargando = true;
+
+        Promise.all([
+          fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
+          cargarObjetivosDesdeServidor()
+        ])
+          .then(([data]) => {
+            const registrosFiltrados = filtrarRegistrosPorDia(data);
+            const resumen = construirResumenPorCalibre(registrosFiltrados);
+
+            actualizarTextoObjetivos();
+            actualizarKPIs(registrosFiltrados, resumen);
+            renderResumenCalibres(resumen);
+            actualizarGraficoTV(registrosFiltrados);
+
+            const ahora = new Date();
+            document.getElementById("estadoSync").innerText =
+              "Última actualización: " + ahora.toLocaleTimeString("es-CL");
+          })
+          .catch(err => {
+            console.error("Error cargando modo TV:", err);
+            document.getElementById("estadoSync").innerText = "Error al sincronizar";
+          })
+          .finally(() => {
+            cargando = false;
+          });
+      }
+
+      function iniciarAutoRefresh() {
+        if (autoRefresh) clearInterval(autoRefresh);
+        autoRefresh = setInterval(cargarDatosTV, 3000);
+      }
+
+      window.addEventListener("load", function () {
+        cargarDatosTV();
+        iniciarAutoRefresh();
+      });
+    </script>
+  </body>
+</html>
