@@ -1,449 +1,428 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Registro de Pesos</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Segoe UI, sans-serif; margin: 0; background: #f4f6f9; }
-        header { background: #1e3c72; color: white; padding: 20px; text-align: center; font-size: 22px; position: relative; }
-        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 50px; }
-        .codigo-empresa { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 500; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
-        input, select { width: 100%; padding: 8px; margin: 5px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #2a5298; color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; }
-        button:hover { background: #1e3c72; }
-        .btn-secundario { background: #6c757d; }
-        .btn-secundario:hover { background: #565e64; }
-        .btn-peligro { background: #c0392b; }
-        .btn-peligro:hover { background: #922b21; }
-        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
-        .row-2 { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #2a5298; color: white; padding: 6px; }
-        td { padding: 6px; border-bottom: 1px solid #eee; }
-        .success { color: green; font-weight: bold; }
-        .hidden { display: none; }
-        .chart-container { position: relative; width: 100%; height: 460px; }
-        .estado-sync { font-size: 12px; color: #666; margin-top: 8px; }
-        .info-objetivos { font-size: 12px; color: #555; margin-top: 10px; line-height: 1.5; }
-        .subtitulo { margin-top: 0; margin-bottom: 12px; }
-        .acciones-regla { display: flex; gap: 6px; justify-content: center; }
-        .badge-config { display: inline-block; background: #eaf2ff; color: #1e3c72; padding: 6px 10px; border-radius: 999px; font-size: 12px; margin-top: 10px; }
-        @media (max-width: 768px) { .row-3, .row-2 { grid-template-columns: 1fr; } }
-    </style>
+    <meta charset="UTF-8">
+    <title>Registro de Pesos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Segoe UI, sans-serif; margin: 0; background: #f4f6f9; }
+        header { background: #1e3c72; color: white; padding: 20px; text-align: center; font-size: 22px; position: relative; }
+        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 50px; }
+        .codigo-empresa { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 500; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: #2a5298; color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #1e3c72; }
+        .btn-secundario { background: #6c757d; }
+        .btn-secundario:hover { background: #565e64; }
+        .btn-peligro { background: #c0392b; }
+        .btn-peligro:hover { background: #922b21; }
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+        .row-2 { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #2a5298; color: white; padding: 6px; }
+        td { padding: 6px; border-bottom: 1px solid #eee; }
+        .success { color: green; font-weight: bold; }
+        .hidden { display: none; }
+        .chart-container { position: relative; width: 100%; height: 460px; }
+        .estado-sync { font-size: 12px; color: #666; margin-top: 8px; }
+        .info-objetivos { font-size: 12px; color: #555; margin-top: 10px; line-height: 1.5; }
+        .subtitulo { margin-top: 0; margin-bottom: 12px; }
+        .acciones-regla { display: flex; gap: 6px; justify-content: center; }
+        .badge-config { display: inline-block; background: #eaf2ff; color: #1e3c72; padding: 6px 10px; border-radius: 999px; font-size: 12px; margin-top: 10px; }
+        @media (max-width: 768px) { .row-3, .row-2 { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
-    <header>
-        <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo" alt="Fresh-Pak">
-        Registro de Pesos
-        <div class="codigo-empresa">R02 POE 29</div>
-    </header>
+    <header>
+        <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo" alt="Fresh-Pak">
+        Registro de Pesos
+        <div class="codigo-empresa">R02 POE 29</div>
+    </header>
 
-    <div class="container">
-        <div class="card" id="loginCard">
-            <h3>Ingreso</h3>
-            <input type="text" id="nombreOperador" placeholder="Nombre operador">
-            <input type="password" id="claveOperador" placeholder="Clave operador">
-            <button onclick="ingresarOperador()">Operador</button>
-            <p id="msgLogin" style="color:red;"></p>
-        </div>
+    <div class="container">
+        <div class="card" id="loginCard">
+            <h3>Ingreso</h3>
+            <input type="text" id="nombreOperador" placeholder="Nombre operador">
+            <input type="password" id="claveOperador" placeholder="Clave operador">
+            <button onclick="ingresarOperador()">Operador</button>
+            <p id="msgLogin" style="color:red;"></p>
+        </div>
 
-        <div class="card hidden" id="objetivosCard">
-            <h3 class="subtitulo">Objetivos del turno</h3>
-            <div class="row-3">
-                <div>
-                    <label for="calibreDesde"><strong>Calibre desde</strong></label>
-                    <input type="number" id="calibreDesde" placeholder="Ej: 72">
-                </div>
-                <div>
-                    <label for="calibreHasta"><strong>Calibre hasta</strong></label>
-                    <input type="number" id="calibreHasta" placeholder="Ej: 125">
-                </div>
-                <div>
-                    <label for="pesoObjetivo"><strong>Peso objetivo (kg)</strong></label>
-                    <input type="text" id="pesoObjetivo" placeholder="Ej: 19,1 o 19.1">
-                </div>
-                <div>
-                    <button type="button" onclick="agregarReglaObjetivo()">Agregar regla</button>
-                </div>
-            </div>
-            <div style="margin-top:15px;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Desde</th>
-                            <th>Hasta</th>
-                            <th>Objetivo (kg)</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaObjetivos"></tbody>
-                </table>
-            </div>
-            <div class="row-2" style="margin-top:15px;">
-                <div>
-                    <span class="badge-config" id="estadoObjetivos">Sin objetivos cargados para este turno</span>
-                </div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button type="button" class="btn-secundario" onclick="cargarObjetivosEjemplo()">Cargar ejemplo</button>
-                    <button type="button" class="btn-peligro" onclick="limpiarObjetivos()">Limpiar reglas</button>
-                </div>
-            </div>
-        </div>
+        <div class="card hidden" id="objetivosCard">
+            <h3 class="subtitulo">Objetivos del turno</h3>
+            <div class="row-3">
+                <div>
+                    <label for="calibreDesde"><strong>Calibre desde</strong></label>
+                    <input type="number" id="calibreDesde" placeholder="Ej: 72">
+                </div>
+                <div>
+                    <label for="calibreHasta"><strong>Calibre hasta</strong></label>
+                    <input type="number" id="calibreHasta" placeholder="Ej: 125">
+                </div>
+                <div>
+                    <label for="pesoObjetivo"><strong>Peso objetivo (kg)</strong></label>
+                    <input type="text" id="pesoObjetivo" placeholder="Ej: 19,1 o 19.1">
+                </div>
+                <div>
+                    <button type="button" onclick="agregarReglaObjetivo()">Agregar regla</button>
+                </div>
+            </div>
+            <div style="margin-top:15px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th>Objetivo (kg)</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaObjetivos"></tbody>
+                </table>
+            </div>
+            <div class="row-2" style="margin-top:15px;">
+                <div>
+                    <span class="badge-config" id="estadoObjetivos">Sin objetivos cargados para este turno</span>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button type="button" class="btn-secundario" onclick="cargarObjetivosEjemplo()">Cargar ejemplo</button>
+                    <button type="button" class="btn-peligro" onclick="limpiarObjetivos()">Limpiar reglas</button>
+                </div>
+            </div>
+        </div>
 
-        <div class="card hidden" id="formCard">
-            <h3>Nuevo Registro</h3>
-            <form id="form">
-                <input type="text" id="operador" readonly>
-                <select id="exportadora" required onchange="actualizarGraficoDesdeFiltro()">
-                    <option value="">Exportadora (Seleccione para filtrar gráfico)</option>
-                    <option>Fruclem</option>
-                    <option>SK Gyan</option>
-                    <option>JHB</option>
-                    <option>Talamaya</option>
-                </select>
-                <select id="categoria" required>
-                    <option value="">Categoría</option>
-                    <option>Premium</option>
-                    <option>Extra</option>
-                    <option>Fancy</option>
-                    <option>Choice</option>
-                    <option>Granel</option>
-                    <option>CEM</option>
-                </select>
-                <select id="variedad" required>
-                    <option value="">Variedad</option>
-                    <option>Royal Gala</option>
-                    <option>Red Delicious</option>
-                    <option>Granny</option>
-                    <option>Fuji</option>
-                    <option>Pink Lady</option>
-                </select>
-                <select id="salida" required>
-                    <option value="">Salida</option>
-                </select>
-                <input type="text" id="calibre" placeholder="Calibre" required>
-                <input type="text" id="lote" placeholder="Lote">
-                <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" required>
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" style="flex: 3;">Guardar</button>
-                    <button type="button" class="btn-secundario" style="flex: 1;" onclick="limpiarFormulario()">Limpiar</button>
-                </div>
-                <p id="msg" class="success"></p>
-            </form>
-        </div>
+        <div class="card hidden" id="formCard">
+            <h3>Nuevo Registro</h3>
+            <form id="form">
+                <input type="text" id="operador" readonly>
+                <select id="exportadora" required onchange="actualizarGraficoDesdeFiltro()">
+                    <option value="">Exportadora (Seleccione para filtrar gráfico)</option>
+                    <option>Fruclem</option>
+                    <option>SK Gyan</option>
+                    <option>JHB</option>
+                    <option>Talamaya</option>
+                </select>
+                <select id="categoria" required>
+                    <option value="">Categoría</option>
+                    <option>Premium</option>
+                    <option>Extra</option>
+                    <option>Fancy</option>
+                    <option>Choice</option>
+                    <option>Granel</option>
+                    <option>CEM</option>
+                </select>
+                <select id="variedad" required>
+                    <option value="">Variedad</option>
+                    <option>Royal Gala</option>
+                    <option>Red Delicious</option>
+                    <option>Granny</option>
+                    <option>Fuji</option>
+                    <option>Pink Lady</option>
+                </select>
+                <select id="salida" required>
+                    <option value="">Salida</option>
+                </select>
+                <input type="text" id="calibre" placeholder="Calibre" required>
+                <input type="text" id="lote" placeholder="Lote">
+                <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" required>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="flex: 3;">Guardar</button>
+                    <button type="button" class="btn-secundario" style="flex: 1;" onclick="limpiarFormulario()">Limpiar</button>
+                </div>
+                <p id="msg" class="success"></p>
+            </form>
+        </div>
 
-        <div class="card" id="registrosCard">
-            <h3>Registros</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Usuario</th>
-                        <th>Exportadora</th>
-                        <th>Salida</th>
-                        <th>Calibre</th>
-                        <th>Categoría</th>
-                        <th>Variedad</th>
-                        <th>Lote</th>
-                        <th>Peso</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla"></tbody>
-            </table>
-            <div class="estado-sync" id="estadoSync">Sincronizando...</div>
-        </div>
+        <div class="card" id="registrosCard">
+            <h3>Registros</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Usuario</th>
+                        <th>Exportadora</th>
+                        <th>Salida</th>
+                        <th>Calibre</th>
+                        <th>Categoría</th>
+                        <th>Variedad</th>
+                        <th>Lote</th>
+                        <th>Peso</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla"></tbody>
+            </table>
+            <div class="estado-sync" id="estadoSync">Sincronizando...</div>
+        </div>
 
-        <div class="card" id="graficoCard">
-            <h3>Seguimiento de pesos por calibre</h3>
-            <div class="chart-container">
-                <canvas id="graficoPesos"></canvas>
-            </div>
-            <div class="info-objetivos" id="infoObjetivos">Objetivos activos del turno: sin definir</div>
-        </div>
-    </div>
+        <div class="card" id="graficoCard">
+            <h3>Seguimiento de pesos por calibre</h3>
+            <div class="chart-container">
+                <canvas id="graficoPesos"></canvas>
+            </div>
+            <div class="info-objetivos" id="infoObjetivos">Objetivos activos del turno: sin definir</div>
+        </div>
+    </div>
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
-        const salidaSelect = document.getElementById("salida");
-        const estadoSync = document.getElementById("estadoSync");
-        let grafico = null;
-        let autoRefresh = null;
-        let cargando = false;
-        let reglasObjetivo = [];
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
+        const salidaSelect = document.getElementById("salida");
+        const estadoSync = document.getElementById("estadoSync");
+        let grafico = null;
+        let autoRefresh = null;
+        let cargando = false;
+        let reglasObjetivo = [];
 
-        for (let i = 1; i <= 41; i++) {
-            let option = document.createElement("option");
-            option.value = i; option.text = i;
-            salidaSelect.appendChild(option);
-        }
+        // Generar las 41 salidas
+        for (let i = 1; i <= 41; i++) {
+            let option = document.createElement("option");
+            option.value = i; option.text = i;
+            salidaSelect.appendChild(option);
+        }
 
-        let operadorData = { operador: "", exportadora: "", variedad: "", lote: "" };
+        let operadorData = { operador: "", exportadora: "", variedad: "", lote: "" };
 
-        function normalizarNumero(valor) {
-            if (valor === null || valor === undefined) return NaN;
-            const limpio = String(valor).trim().replace(",", ".");
-            return parseFloat(limpio);
-        }
+        function normalizarNumero(valor) {
+            if (valor === null || valor === undefined) return NaN;
+            const limpio = String(valor).trim().replace(",", ".");
+            return parseFloat(limpio);
+        }
 
-        function formatDate(date) {
-            if (date instanceof Date) {
-                const day = String(date.getDate()).padStart(2, "0");
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const year = date.getFullYear();
-                return `${year}-${month}-${day}`;
-            }
-            return date;
-        }
+        function formatDate(date) {
+            if (date instanceof Date) {
+                const day = String(date.getDate()).padStart(2, "0");
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const year = date.getFullYear();
+                return `${year}-${month}-${day}`;
+            }
+            return date;
+        }
 
-        function filtrarRegistrosPorDia(registros) {
-            const hoy = new Date();
-            const fechaHoy = formatDate(hoy);
-            return registros.filter(row => {
-                if (!row || row.length < 10) return false;
-                if (String(row[0]).toLowerCase() === "fecha") return false;
-                // Manejo flexible de formato de fecha string
-                let fReg = row[0];
-                if(fReg.includes("/")) {
-                    const p = fReg.split("/");
-                    fReg = `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
-                }
-                return fReg === fechaHoy;
-            });
-        }
+        function filtrarRegistrosPorDia(registros) {
+            const hoy = new Date();
+            const fechaHoy = formatDate(hoy);
+            return registros.filter(row => {
+                if (!row || row.length < 10) return false;
+                if (String(row[0]).toLowerCase() === "fecha") return false;
+                let fReg = row[0];
+                if(fReg.includes("/")) {
+                    const p = fReg.split("/");
+                    fReg = `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+                }
+                return fReg === fechaHoy;
+            });
+        }
 
-        function generarColor(index) {
-            const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#9c27b0", "#009688", "#f44336", "#795548", "#607d8b", "#3f51b5", "#8bc34a", "#ffc107", "#673ab7", "#00bcd4"];
-            return colores[index % colores.length];
-        }
+        function generarColor(index) {
+            const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#9c27b0", "#009688", "#f44336", "#795548", "#607d8b", "#3f51b5", "#8bc34a", "#ffc107", "#673ab7", "#00bcd4"];
+            return colores[index % colores.length];
+        }
 
-        function guardarObjetivosEnServidor() {
-            return fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams({ accion: "guardarObjetivos", objetivos: JSON.stringify(reglasObjetivo) }) }).then(res => res.json());
-        }
+        function guardarObjetivosEnServidor() {
+            return fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams({ accion: "guardarObjetivos", objetivos: JSON.stringify(reglasObjetivo) }) }).then(res => res.json());
+        }
 
-        function cargarObjetivosDesdeServidor() {
-            return fetch(SCRIPT_URL + "?tipo=objetivos&t=" + new Date().getTime())
-                .then(res => res.json())
-                .then(data => {
-                    if (!Array.isArray(data)) { reglasObjetivo = []; return; }
-                    reglasObjetivo = data.filter((row, index) => row && row.length >= 3 && index > 0)
-                        .map(r => ({ desde: parseInt(r[0], 10), hasta: parseInt(r[1], 10), objetivo: Number(normalizarNumero(r[2]).toFixed(2)) }))
-                        .filter(r => !isNaN(r.desde) && !isNaN(r.hasta) && !isNaN(r.objetivo));
-                }).catch(err => { console.error("Error cargando objetivos:", err); });
-        }
+        function cargarObjetivosDesdeServidor() {
+            return fetch(SCRIPT_URL + "?tipo=objetivos&t=" + new Date().getTime())
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data)) { reglasObjetivo = []; return; }
+                    reglasObjetivo = data.filter((row, index) => row && row.length >= 3 && index > 0)
+                        .map(r => ({ desde: parseInt(r[0], 10), hasta: parseInt(r[1], 10), objetivo: Number(normalizarNumero(r[2]).toFixed(2)) }))
+                        .filter(r => !isNaN(r.desde) && !isNaN(r.hasta) && !isNaN(r.objetivo));
+                }).catch(err => { console.error("Error cargando objetivos:", err); });
+        }
 
-        function actualizarEstadoObjetivos() {
-            const info = document.getElementById("infoObjetivos");
-            const estado = document.getElementById("estadoObjetivos");
-            if (!reglasObjetivo.length) {
-                if(estado) estado.innerText = "Sin objetivos cargados";
-                info.innerText = "Objetivos activos: sin definir";
-                return;
-            }
-            if(estado) estado.innerText = `${reglasObjetivo.length} regla(s) activa(s)`;
-            const texto = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}=${Number(r.objetivo).toFixed(2)}`).join(" | ");
-            info.innerText = "Objetivos: " + texto;
-        }
+        function actualizarEstadoObjetivos() {
+            const info = document.getElementById("infoObjetivos");
+            const estado = document.getElementById("estadoObjetivos");
+            if (!reglasObjetivo.length) {
+                if(estado) estado.innerText = "Sin objetivos cargados";
+                info.innerText = "Objetivos activos: sin definir";
+                return;
+            }
+            if(estado) estado.innerText = `${reglasObjetivo.length} regla(s) activa(s)`;
+            const texto = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}=${Number(r.objetivo).toFixed(2)}`).join(" | ");
+            info.innerText = "Objetivos: " + texto;
+        }
 
-        function renderTablaObjetivos() {
-            const tbody = document.getElementById("tablaObjetivos");
-            if(!tbody) return;
-            tbody.innerHTML = "";
-            if (!reglasObjetivo.length) {
-                tbody.innerHTML = '<tr><td colspan="4">No hay reglas cargadas.</td></tr>';
-                actualizarEstadoObjetivos();
-                return;
-            }
-            reglasObjetivo.sort((a, b) => a.desde - b.desde).forEach((regla, index) => {
-                tbody.innerHTML += `<tr><td>${regla.desde}</td><td>${regla.hasta}</td><td>${Number(regla.objetivo).toFixed(2)}</td><td><button type="button" class="btn-peligro" onclick="eliminarRegla(${index})">Eliminar</button></td></tr>`;
-            });
-            actualizarEstadoObjetivos();
-        }
+        function renderTablaObjetivos() {
+            const tbody = document.getElementById("tablaObjetivos");
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            if (!reglasObjetivo.length) {
+                tbody.innerHTML = '<tr><td colspan="4">No hay reglas cargadas.</td></tr>';
+                actualizarEstadoObjetivos();
+                return;
+            }
+            reglasObjetivo.sort((a, b) => a.desde - b.desde).forEach((regla, index) => {
+                tbody.innerHTML += `<tr><td>${regla.desde}</td><td>${regla.hasta}</td><td>${Number(regla.objetivo).toFixed(2)}</td><td><button type="button" class="btn-peligro" onclick="eliminarRegla(${index})">Eliminar</button></td></tr>`;
+            });
+            actualizarEstadoObjetivos();
+        }
 
-        function agregarReglaObjetivo() {
-            const desde = parseInt(document.getElementById("calibreDesde").value, 10);
-            const hasta = parseInt(document.getElementById("calibreHasta").value, 10);
-            const objetivo = normalizarNumero(document.getElementById("pesoObjetivo").value);
-            if (isNaN(desde) || isNaN(hasta) || isNaN(objetivo)) return;
-            reglasObjetivo.push({ desde, hasta, objetivo: Number(objetivo.toFixed(2)) });
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
-            document.getElementById("calibreDesde").value = ""; document.getElementById("calibreHasta").value = ""; document.getElementById("pesoObjetivo").value = "";
-        }
+        function agregarReglaObjetivo() {
+            const desde = parseInt(document.getElementById("calibreDesde").value, 10);
+            const hasta = parseInt(document.getElementById("calibreHasta").value, 10);
+            const objetivo = normalizarNumero(document.getElementById("pesoObjetivo").value);
+            if (isNaN(desde) || isNaN(hasta) || isNaN(objetivo)) return;
+            reglasObjetivo.push({ desde, hasta, objetivo: Number(objetivo.toFixed(2)) });
+            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
+            document.getElementById("calibreDesde").value = ""; document.getElementById("calibreHasta").value = ""; document.getElementById("pesoObjetivo").value = "";
+        }
 
-        function eliminarRegla(index) {
-            reglasObjetivo.splice(index, 1);
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
-        }
+        function eliminarRegla(index) {
+            reglasObjetivo.splice(index, 1);
+            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
+        }
 
-        function limpiarObjetivos() {
-            reglasObjetivo = [];
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
-        }
+        function limpiarObjetivos() {
+            reglasObjetivo = [];
+            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
+        }
 
-        function cargarObjetivosEjemplo() {
-            reglasObjetivo = [{ desde: 72, hasta: 125, objetivo: 19.1 }, { desde: 150, hasta: 216, objetivo: 20.1 }];
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
-        }
+        function cargarObjetivosEjemplo() {
+            reglasObjetivo = [{ desde: 72, hasta: 125, objetivo: 19.1 }, { desde: 150, hasta: 216, objetivo: 20.1 }];
+            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
+        }
 
-        function obtenerObjetivoPorCalibre(calibre) {
-            const c = parseInt(calibre, 10);
-            for (const r of reglasObjetivo) { if (c >= r.desde && c <= r.hasta) return r.objetivo; }
-            return null;
-        }
+        function obtenerObjetivoPorCalibre(calibre) {
+            const c = parseInt(calibre, 10);
+            for (const r of reglasObjetivo) { if (c >= r.desde && c <= r.hasta) return r.objetivo; }
+            return null;
+        }
 
-        function actualizarTabla(registros) {
-            const tbody = document.getElementById("tabla");
-            tbody.innerHTML = "";
-            if (!registros || registros.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10">No hay registros hoy.</td></tr>';
-                return;
-            }
-            [...registros].reverse().forEach(row => {
-                tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td><td>${row[6]}</td><td>${row[7]}</td><td>${row[8]}</td><td>${row[9]}</td></tr>`;
-            });
-        }
+        function actualizarTabla(registros) {
+            const tbody = document.getElementById("tabla");
+            tbody.innerHTML = "";
+            if (!registros || registros.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10">No hay registros hoy.</td></tr>';
+                return;
+            }
+            [...registros].reverse().forEach(row => {
+                tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td><td>${row[6]}</td><td>${row[7]}</td><td>${row[8]}</td><td>${row[9]}</td></tr>`;
+            });
+        }
 
-        // --- FUNCIÓN MEJORADA: SINCRONIZACIÓN DE GRÁFICO ---
-        function actualizarGrafico(registros) {
-            const canvas = document.getElementById("graficoPesos");
-            const ctx = canvas.getContext("2d");
-            
-            // 1. Obtener exportadora del selector
-            let expSel = document.getElementById("exportadora").value;
+        function actualizarGrafico(registros) {
+            const canvas = document.getElementById("graficoPesos");
+            const ctx = canvas.getContext("2d");
+            let expSel = document.getElementById("exportadora").value;
+            if ((!expSel || expSel === "") && registros.length > 0) {
+                expSel = String(registros[registros.length - 1][3]).trim();
+                document.getElementById("exportadora").value = expSel; 
+            }
+            actualizarEstadoObjetivos();
+            if (!registros || registros.length === 0) {
+                if (grafico) { grafico.destroy(); grafico = null; }
+                return;
+            }
+            const filtrados = registros.filter(row => String(row[3]).trim() === expSel);
+            const grupos = {};
+            filtrados.forEach(row => {
+                const cal = String(row[5]).trim();
+                const pes = normalizarNumero(row[9]);
+                if (!cal || isNaN(pes)) return;
+                if (!grupos[cal]) grupos[cal] = [];
+                grupos[cal].push(pes);
+            });
+            const maxCajas = Math.max(...Object.values(grupos).map(a => a.length), 0);
+            const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
+            const calUnicos = Object.keys(grupos).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+            const datasets = [];
+            calUnicos.forEach((cal, idx) => {
+                const color = generarColor(idx);
+                datasets.push({ label: `C ${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color, tension: 0.2, fill: false, pointRadius: 4 });
+                const obj = obtenerObjetivoPorCalibre(cal);
+                if (obj !== null) {
+                    datasets.push({ label: `C ${cal} Obj (${obj})`, data: Array(grupos[cal].length).fill(obj), borderColor: color, borderDash: [6, 4], pointRadius: 0, fill: false });
+                }
+            });
+            if (grafico) grafico.destroy();
+            grafico = new Chart(ctx, {
+                type: "line", data: { labels, datasets },
+                options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { beginAtZero: false } } }
+            });
+        }
 
-            // 2. Lógica de Sincronización: Si no hay selección manual, seguir al último dato real
-            if ((!expSel || expSel === "") && registros.length > 0) {
-                expSel = String(registros[registros.length - 1][3]).trim();
-                document.getElementById("exportadora").value = expSel; 
-            }
+        function cargarRegistros() {
+            if (cargando) return;
+            cargando = true;
+            Promise.all([
+                fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
+                cargarObjetivosDesdeServidor()
+            ]).then(([data]) => {
+                const filtrados = filtrarRegistrosPorDia(data);
+                actualizarTabla(filtrados);
+                actualizarGrafico(filtrados);
+                estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
+            }).catch(err => {
+                estadoSync.innerText = "Error de conexión";
+            }).finally(() => { cargando = false; });
+        }
 
-            actualizarEstadoObjetivos();
+        function actualizarGraficoDesdeFiltro() {
+            cargarRegistros();
+        }
 
-            if (!registros || registros.length === 0) {
-                if (grafico) { grafico.destroy(); grafico = null; }
-                return;
-            }
+        function limpiarFormulario() {
+            document.getElementById("form").reset();
+            document.getElementById("operador").value = operadorData.operador;
+            cargarRegistros();
+        }
 
-            // Filtrar registros para el gráfico según la exportadora activa
-            const filtrados = registros.filter(row => String(row[3]).trim() === expSel);
+        function iniciarAutoRefresh() {
+            if (autoRefresh) clearInterval(autoRefresh);
+            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 3000);
+        }
 
-            const grupos = {};
-            filtrados.forEach(row => {
-                const cal = String(row[5]).trim();
-                const pes = normalizarNumero(row[9]);
-                if (!cal || isNaN(pes)) return;
-                if (!grupos[cal]) grupos[cal] = [];
-                grupos[cal].push(pes);
-            });
+        window.addEventListener("load", () => {
+            const exp = localStorage.getItem("exportadora");
+            if (exp) document.getElementById("exportadora").value = exp;
+            iniciarAutoRefresh();
+            cargarRegistros(); // Carga inicial pública
+        });
 
-            const maxCajas = Math.max(...Object.values(grupos).map(a => a.length), 0);
-            const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
-            const calUnicos = Object.keys(grupos).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-            const datasets = [];
+        function ingresarOperador() {
+            const n = document.getElementById("nombreOperador").value.trim();
+            const c = document.getElementById("claveOperador").value.trim();
+            if (c === "fresh") {
+                operadorData.operador = n;
+                document.getElementById("operador").value = n;
+                document.getElementById("loginCard").classList.add("hidden");
+                document.getElementById("formCard").classList.remove("hidden");
+                document.getElementById("objetivosCard").classList.remove("hidden");
+                renderTablaObjetivos();
+            } else {
+                document.getElementById("msgLogin").innerText = "Clave incorrecta";
+            }
+        }
 
-            calUnicos.forEach((cal, idx) => {
-                const color = generarColor(idx);
-                datasets.push({
-                    label: `C ${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color, tension: 0.2, fill: false, pointRadius: 4
-                });
-                const obj = obtenerObjetivoPorCalibre(cal);
-                if (obj !== null) {
-                    datasets.push({
-                        label: `C ${cal} Obj (${obj})`, data: Array(grupos[cal].length).fill(obj), borderColor: color, borderDash: [6, 4], pointRadius: 0, fill: false
-                    });
-                }
-            });
-
-            if (grafico) grafico.destroy();
-            grafico = new Chart(ctx, {
-                type: "line", data: { labels, datasets },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, animation: false,
-                    scales: { y: { beginAtZero: false } }
-                }
-            });
-        }
-
-        function cargarRegistros() {
-            if (cargando) return;
-            cargando = true;
-            Promise.all([
-                fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
-                cargarObjetivosDesdeServidor()
-            ]).then(([data]) => {
-                const filtrados = filtrarRegistrosPorDia(data);
-                actualizarTabla(filtrados);
-                actualizarGrafico(filtrados);
-                estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
-            }).catch(err => {
-                estadoSync.innerText = "Error de conexión";
-            }).finally(() => { cargando = false; });
-        }
-
-        function actualizarGraficoDesdeFiltro() {
-            cargarRegistros();
-        }
-
-        function limpiarFormulario() {
-            document.getElementById("form").reset();
-            document.getElementById("operador").value = operadorData.operador;
-            cargarRegistros();
-        }
-
-        function iniciarAutoRefresh() {
-            if (autoRefresh) clearInterval(autoRefresh);
-            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 3000);
-        }
-
-        window.addEventListener("load", () => {
-            const exp = localStorage.getItem("exportadora");
-            if (exp) document.getElementById("exportadora").value = exp;
-            iniciarAutoRefresh();
-        });
-
-        function ingresarOperador() {
-            const n = document.getElementById("nombreOperador").value.trim();
-            const c = document.getElementById("claveOperador").value.trim();
-            if (c === "fresh") {
-                operadorData.operador = n;
-                document.getElementById("operador").value = n;
-                document.getElementById("loginCard").classList.add("hidden");
-                document.getElementById("registrosCard").classList.remove("hidden");
-                document.getElementById("formCard").classList.remove("hidden");
-                document.getElementById("objetivosCard").classList.remove("hidden");
-                renderTablaObjetivos();
-                cargarRegistros();
-            } else {
-                document.getElementById("msgLogin").innerText = "Clave incorrecta";
-            }
-        }
-
-        document.getElementById("form").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const data = {
-                operador: operadorData.operador,
-                exportadora: document.getElementById("exportadora").value,
-                salida: document.getElementById("salida").value,
-                calibre: document.getElementById("calibre").value,
-                categoria: document.getElementById("categoria").value,
-                variedad: document.getElementById("variedad").value,
-                lote: document.getElementById("lote").value,
-                peso: document.getElementById("peso").value
-            };
-            fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
-                .then(res => res.json())
-                .then(() => {
-                    document.getElementById("msg").innerText = "Guardado!";
-                    localStorage.setItem("exportadora", data.exportadora);
-                    document.getElementById("calibre").value = "";
-                    document.getElementById("peso").value = "";
-                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 1500);
-                    cargarRegistros();
-                });
-        });
-    </script>
+        document.getElementById("form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const data = {
+                operador: operadorData.operador,
+                exportadora: document.getElementById("exportadora").value,
+                salida: document.getElementById("salida").value,
+                calibre: document.getElementById("calibre").value,
+                categoria: document.getElementById("categoria").value,
+                variedad: document.getElementById("variedad").value,
+                lote: document.getElementById("lote").value,
+                peso: document.getElementById("peso").value
+            };
+            fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
+                .then(res => res.json())
+                .then(() => {
+                    document.getElementById("msg").innerText = "Guardado!";
+                    localStorage.setItem("exportadora", data.exportadora);
+                    document.getElementById("calibre").value = "";
+                    document.getElementById("peso").value = "";
+                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 1500);
+                    cargarRegistros();
+                });
+        });
+    </script>
 </body>
 </html>
