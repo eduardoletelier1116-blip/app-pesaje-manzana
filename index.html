@@ -137,24 +137,26 @@
         </div>
 
         <div class="card hidden" id="registrosCard">
-            <h3>Registros: <span id="nombreExportadoraActual">...</span></h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Usuario</th>
-                        <th>Exportadora</th>
-                        <th>Salida</th>
-                        <th>Calibre</th>
-                        <th>Categoría</th>
-                        <th>Variedad</th>
-                        <th>Lote</th>
-                        <th>Peso</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla"></tbody>
-            </table>
+            <h3>Registros</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Usuario</th>
+                            <th>Exportadora</th>
+                            <th>Salida</th>
+                            <th>Calibre</th>
+                            <th>Categoría</th>
+                            <th>Variedad</th>
+                            <th>Lote</th>
+                            <th>Peso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla"></tbody>
+                </table>
+            </div>
             <div class="estado-sync" id="estadoSync">Sincronizando...</div>
         </div>
 
@@ -175,7 +177,7 @@
         let autoRefresh = null;
         let cargando = false;
         let reglasObjetivo = [];
-        let primeraCargaAuto = true; // Control para la detección inicial
+        let primeraCargaAuto = true; // Para detectar la exportadora al entrar
 
         for (let i = 1; i <= 41; i++) {
             let option = document.createElement("option");
@@ -311,14 +313,13 @@
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
             
-            // Si es la carga inicial y no hay selección, detectamos la última exportadora
+            // Detectamos exportadora si no hay una seleccionada
             let expSel = document.getElementById("exportadora").value;
             if ((!expSel || expSel === "") && registros.length > 0) {
                 expSel = String(registros[registros.length - 1][3]).trim();
                 document.getElementById("exportadora").value = expSel; 
             }
 
-            document.getElementById("nombreExportadoraActual").innerText = expSel || "Todas";
             actualizarEstadoObjetivos();
 
             if (!registros || registros.length === 0) {
@@ -326,10 +327,8 @@
                 return;
             }
 
-            // FILTRO CRÍTICO: Solo mostrar lo de la exportadora seleccionada/detectada
+            // Filtrado estricto por exportadora para gráfico y tabla
             const filtrados = registros.filter(row => String(row[3]).trim() === expSel);
-            
-            // Actualizamos la tabla también con el filtro para que coincida con el gráfico
             actualizarTabla(filtrados);
 
             const grupos = {};
@@ -376,16 +375,16 @@
                 fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
                 cargarObjetivosDesdeServidor()
             ]).then(([data]) => {
-                const registrosDelDia = filtrarRegistrosPorDia(data);
+                const filtradosDia = filtrarRegistrosPorDia(data);
                 
-                // Si es la primerísima carga al abrir la app, forzamos la detección de exportadora
-                if (primeraCargaAuto && registrosDelDia.length > 0) {
-                    const ultima = String(registrosDelDia[registrosDelDia.length - 1][3]).trim();
+                // Si es la carga inicial tras el login, detectamos la exportadora
+                if (primeraCargaAuto && filtradosDia.length > 0) {
+                    const ultima = String(filtradosDia[filtradosDia.length - 1][3]).trim();
                     document.getElementById("exportadora").value = ultima;
                     primeraCargaAuto = false;
                 }
                 
-                actualizarGrafico(registrosDelDia);
+                actualizarGrafico(filtradosDia);
                 estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
             }).catch(err => {
                 estadoSync.innerText = "Error de conexión";
@@ -397,17 +396,16 @@
         }
 
         function limpiarFormulario() {
-            // No limpiamos la exportadora para que el usuario no pierda el hilo del trabajo actual
-            const expActual = document.getElementById("exportadora").value;
+            const expPrev = document.getElementById("exportadora").value;
             document.getElementById("form").reset();
             document.getElementById("operador").value = operadorData.operador;
-            document.getElementById("exportadora").value = expActual;
+            document.getElementById("exportadora").value = expPrev;
             cargarRegistros();
         }
 
         function iniciarAutoRefresh() {
             if (autoRefresh) clearInterval(autoRefresh);
-            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 4000);
+            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 5000);
         }
 
         function ingresarOperador() {
@@ -417,10 +415,13 @@
                 operadorData.operador = n;
                 document.getElementById("operador").value = n;
                 document.getElementById("loginCard").classList.add("hidden");
+                
+                // Mostramos todas las tarjetas
                 document.getElementById("registrosCard").classList.remove("hidden");
                 document.getElementById("formCard").classList.remove("hidden");
                 document.getElementById("objetivosCard").classList.remove("hidden");
                 document.getElementById("graficoCard").classList.remove("hidden");
+                
                 renderTablaObjetivos();
                 cargarRegistros();
                 iniciarAutoRefresh();
@@ -444,10 +445,10 @@
             fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
                 .then(res => res.json())
                 .then(() => {
-                    document.getElementById("msg").innerText = "¡Guardado con éxito!";
+                    document.getElementById("msg").innerText = "¡Guardado!";
                     document.getElementById("calibre").value = "";
                     document.getElementById("peso").value = "";
-                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 2000);
+                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 1500);
                     cargarRegistros();
                 });
         });
