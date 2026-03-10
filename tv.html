@@ -239,7 +239,7 @@
                 const listaHtml = calsSorted.map(c => {
                     const p = resumen[c].reduce((a,b) => a+b, 0) / resumen[c].length;
                     const o = obtenerObjetivo(c);
-                    const clase = (o && Math.abs(p - o) > 0.3) ? 'fuera' : '';
+                    const clase = (o && Math.abs(p - o) > 0.1) ? 'fuera' : '';
                     return `<div class="fila-simple"><div class="fila-calibre">C${c}</div><div class="fila-promedio ${clase}">${p.toFixed(2)}</div></div>`;
                 }).join("");
                 
