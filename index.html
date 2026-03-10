@@ -98,7 +98,7 @@
             <form id="form">
                 <input type="text" id="operador" readonly>
                 <select id="exportadora" required onchange="actualizarGraficoDesdeFiltro()">
-                    <option value="">Exportadora (Seleccione para filtrar gráfico)</option>
+                    <option value="">Exportadora (Auto-detectar)</option>
                     <option>Fruclem</option>
                     <option>SK Gyan</option>
                     <option>JHB</option>
@@ -158,7 +158,7 @@
         </div>
 
         <div class="card" id="graficoCard">
-            <h3>Seguimiento de pesos por calibre</h3>
+            <h3 id="tituloGrafico">Seguimiento de pesos por calibre</h3>
             <div class="chart-container">
                 <canvas id="graficoPesos"></canvas>
             </div>
@@ -175,7 +175,6 @@
         let cargando = false;
         let reglasObjetivo = [];
 
-        // Generar las 41 salidas
         for (let i = 1; i <= 41; i++) {
             let option = document.createElement("option");
             option.value = i; option.text = i;
@@ -306,20 +305,32 @@
             });
         }
 
+        // --- ESTA ES LA FUNCIÓN QUE CAMBIAMOS PARA EL COMPORTAMIENTO AUTOMÁTICO ---
         function actualizarGrafico(registros) {
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
+            
+            // 1. Prioridad: Si el selector tiene algo, lo usamos.
+            // 2. Si el selector está vacío (Modo TV), detectamos la última exportadora de los registros.
             let expSel = document.getElementById("exportadora").value;
+            
             if ((!expSel || expSel === "") && registros.length > 0) {
                 expSel = String(registros[registros.length - 1][3]).trim();
-                document.getElementById("exportadora").value = expSel; 
+                document.getElementById("tituloGrafico").innerText = "Seguimiento: " + expSel;
+            } else if (expSel !== "") {
+                document.getElementById("tituloGrafico").innerText = "Seguimiento: " + expSel;
             }
+
             actualizarEstadoObjetivos();
-            if (!registros || registros.length === 0) {
+            
+            if (!registros || registros.length === 0 || !expSel) {
                 if (grafico) { grafico.destroy(); grafico = null; }
                 return;
             }
+
+            // Filtrar SOLO los datos de la exportadora activa
             const filtrados = registros.filter(row => String(row[3]).trim() === expSel);
+            
             const grupos = {};
             filtrados.forEach(row => {
                 const cal = String(row[5]).trim();
@@ -328,18 +339,22 @@
                 if (!grupos[cal]) grupos[cal] = [];
                 grupos[cal].push(pes);
             });
+
             const maxCajas = Math.max(...Object.values(grupos).map(a => a.length), 0);
             const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
             const calUnicos = Object.keys(grupos).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+            
             const datasets = [];
             calUnicos.forEach((cal, idx) => {
                 const color = generarColor(idx);
                 datasets.push({ label: `C ${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color, tension: 0.2, fill: false, pointRadius: 4 });
+                
                 const obj = obtenerObjetivoPorCalibre(cal);
                 if (obj !== null) {
                     datasets.push({ label: `C ${cal} Obj (${obj})`, data: Array(grupos[cal].length).fill(obj), borderColor: color, borderDash: [6, 4], pointRadius: 0, fill: false });
                 }
             });
+
             if (grafico) grafico.destroy();
             grafico = new Chart(ctx, {
                 type: "line", data: { labels, datasets },
@@ -370,19 +385,17 @@
         function limpiarFormulario() {
             document.getElementById("form").reset();
             document.getElementById("operador").value = operadorData.operador;
-            cargarRegistros();
+            // No cargamos registros aquí para no resetear el filtro del gráfico si se está usando como TV
         }
 
         function iniciarAutoRefresh() {
             if (autoRefresh) clearInterval(autoRefresh);
-            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 3000);
+            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 5000);
         }
 
         window.addEventListener("load", () => {
-            const exp = localStorage.getItem("exportadora");
-            if (exp) document.getElementById("exportadora").value = exp;
             iniciarAutoRefresh();
-            cargarRegistros(); // Carga inicial pública
+            cargarRegistros(); 
         });
 
         function ingresarOperador() {
@@ -416,7 +429,6 @@
                 .then(res => res.json())
                 .then(() => {
                     document.getElementById("msg").innerText = "Guardado!";
-                    localStorage.setItem("exportadora", data.exportadora);
                     document.getElementById("calibre").value = "";
                     document.getElementById("peso").value = "";
                     setTimeout(() => { document.getElementById("msg").innerText = ""; }, 1500);
