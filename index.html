@@ -112,6 +112,7 @@
                     <option>Choice</option>
                     <option>Granel</option>
                     <option>CEM</option>
+                    <option>Extra Fancy</option>
                 </select>
                 <select id="variedad" required>
                     <option value="">Variedad</option>
@@ -135,8 +136,8 @@
             </form>
         </div>
 
-        <div class="card" id="registrosCard">
-            <h3>Registros</h3>
+        <div class="card hidden" id="registrosCard">
+            <h3>Registros: <span id="nombreExportadoraActual">...</span></h3>
             <table>
                 <thead>
                     <tr>
@@ -157,7 +158,7 @@
             <div class="estado-sync" id="estadoSync">Sincronizando...</div>
         </div>
 
-        <div class="card" id="graficoCard">
+        <div class="card hidden" id="graficoCard">
             <h3>Seguimiento de pesos por calibre</h3>
             <div class="chart-container">
                 <canvas id="graficoPesos"></canvas>
@@ -174,6 +175,7 @@
         let autoRefresh = null;
         let cargando = false;
         let reglasObjetivo = [];
+        let primeraCargaAuto = true; // Control para la detección inicial
 
         for (let i = 1; i <= 41; i++) {
             let option = document.createElement("option");
@@ -205,7 +207,6 @@
             return registros.filter(row => {
                 if (!row || row.length < 10) return false;
                 if (String(row[0]).toLowerCase() === "fecha") return false;
-                // Manejo flexible de formato de fecha string
                 let fReg = row[0];
                 if(fReg.includes("/")) {
                     const p = fReg.split("/");
@@ -216,7 +217,7 @@
         }
 
         function generarColor(index) {
-            const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#9c27b0", "#009688", "#f44336", "#795548", "#607d8b", "#3f51b5", "#8bc34a", "#ffc107", "#673ab7", "#00bcd4"];
+            const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#9c27b0", "#009688", "#f44336", "#795548", "#607d8b"];
             return colores[index % colores.length];
         }
 
@@ -306,20 +307,18 @@
             });
         }
 
-        // --- FUNCIÓN MEJORADA: SINCRONIZACIÓN DE GRÁFICO ---
         function actualizarGrafico(registros) {
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
             
-            // 1. Obtener exportadora del selector
+            // Si es la carga inicial y no hay selección, detectamos la última exportadora
             let expSel = document.getElementById("exportadora").value;
-
-            // 2. Lógica de Sincronización: Si no hay selección manual, seguir al último dato real
             if ((!expSel || expSel === "") && registros.length > 0) {
                 expSel = String(registros[registros.length - 1][3]).trim();
                 document.getElementById("exportadora").value = expSel; 
             }
 
+            document.getElementById("nombreExportadoraActual").innerText = expSel || "Todas";
             actualizarEstadoObjetivos();
 
             if (!registros || registros.length === 0) {
@@ -327,8 +326,11 @@
                 return;
             }
 
-            // Filtrar registros para el gráfico según la exportadora activa
+            // FILTRO CRÍTICO: Solo mostrar lo de la exportadora seleccionada/detectada
             const filtrados = registros.filter(row => String(row[3]).trim() === expSel);
+            
+            // Actualizamos la tabla también con el filtro para que coincida con el gráfico
+            actualizarTabla(filtrados);
 
             const grupos = {};
             filtrados.forEach(row => {
@@ -374,9 +376,16 @@
                 fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
                 cargarObjetivosDesdeServidor()
             ]).then(([data]) => {
-                const filtrados = filtrarRegistrosPorDia(data);
-                actualizarTabla(filtrados);
-                actualizarGrafico(filtrados);
+                const registrosDelDia = filtrarRegistrosPorDia(data);
+                
+                // Si es la primerísima carga al abrir la app, forzamos la detección de exportadora
+                if (primeraCargaAuto && registrosDelDia.length > 0) {
+                    const ultima = String(registrosDelDia[registrosDelDia.length - 1][3]).trim();
+                    document.getElementById("exportadora").value = ultima;
+                    primeraCargaAuto = false;
+                }
+                
+                actualizarGrafico(registrosDelDia);
                 estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
             }).catch(err => {
                 estadoSync.innerText = "Error de conexión";
@@ -388,21 +397,18 @@
         }
 
         function limpiarFormulario() {
+            // No limpiamos la exportadora para que el usuario no pierda el hilo del trabajo actual
+            const expActual = document.getElementById("exportadora").value;
             document.getElementById("form").reset();
             document.getElementById("operador").value = operadorData.operador;
+            document.getElementById("exportadora").value = expActual;
             cargarRegistros();
         }
 
         function iniciarAutoRefresh() {
             if (autoRefresh) clearInterval(autoRefresh);
-            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 3000);
+            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 4000);
         }
-
-        window.addEventListener("load", () => {
-            const exp = localStorage.getItem("exportadora");
-            if (exp) document.getElementById("exportadora").value = exp;
-            iniciarAutoRefresh();
-        });
 
         function ingresarOperador() {
             const n = document.getElementById("nombreOperador").value.trim();
@@ -414,8 +420,10 @@
                 document.getElementById("registrosCard").classList.remove("hidden");
                 document.getElementById("formCard").classList.remove("hidden");
                 document.getElementById("objetivosCard").classList.remove("hidden");
+                document.getElementById("graficoCard").classList.remove("hidden");
                 renderTablaObjetivos();
                 cargarRegistros();
+                iniciarAutoRefresh();
             } else {
                 document.getElementById("msgLogin").innerText = "Clave incorrecta";
             }
@@ -436,11 +444,10 @@
             fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
                 .then(res => res.json())
                 .then(() => {
-                    document.getElementById("msg").innerText = "Guardado!";
-                    localStorage.setItem("exportadora", data.exportadora);
+                    document.getElementById("msg").innerText = "¡Guardado con éxito!";
                     document.getElementById("calibre").value = "";
                     document.getElementById("peso").value = "";
-                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 1500);
+                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 2000);
                     cargarRegistros();
                 });
         });
