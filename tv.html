@@ -2,66 +2,84 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Modo TV - Control de Calidad</title>
+    <title>Modo TV - Control de Pesos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #0f172a; color: #f8fafc; overflow: hidden; }
-        header { background: #1e3c72; color: white; padding: 8px 20px; text-align: center; font-size: 20px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; }
-        .logo { height: 30px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; overflow: hidden; }
+        header { background: #1e3c72; color: white; padding: 8px 24px; text-align: center; font-size: 20px; font-weight: 700; position: relative; }
+        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 30px; }
         
-        .main { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 10px; padding: 10px; height: calc(100vh - 50px); box-sizing: border-box; }
-        .panel { background: #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; min-height: 0; border: 1px solid #334155; }
+        .main { display: grid; grid-template-columns: 2fr 1.2fr; gap: 10px; padding: 10px; height: calc(100vh - 45px); box-sizing: border-box; }
+        .panel { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); padding: 12px; display: flex; flex-direction: column; min-height: 0; }
         
-        .chart-title { font-size: 18px; color: #60a5fa; margin-bottom: 5px; font-weight: 800; text-transform: uppercase; }
-        .chart-container { flex: 1; min-height: 0; background: #0f172a; border-radius: 8px; padding: 5px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .chart-title { font-size: 18px; font-weight: 800; color: #1e3c72; }
+        .chart-container { position: relative; flex: 1; min-height: 0; }
         
         .sidebar { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-        .resumen-box { flex: 1; min-height: 0; overflow: hidden; }
-        .resumen-title { font-size: 14px; font-weight: 700; color: #94a3b8; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+        .mini-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .kpi { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px; text-align: center; }
+        .kpi-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+        .kpi-value { font-size: 22px; font-weight: 800; color: #1e3c72; }
+
+        .resumen-box { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 10px; }
+        .resumen-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #64748b; text-transform: uppercase; }
         
-        .resumen-lista { display: flex; flex-direction: column; gap: 4px; height: 100%; }
-        
+        .resumen-lista { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
         .fila-comparativa { 
             display: grid; 
             grid-template-columns: 0.5fr 1fr 1fr; 
             align-items: center; 
+            border: 1px solid #f1f5f9; 
             border-radius: 6px; 
-            padding: 6px 10px; 
-            background: #334155;
-            transition: all 0.3s;
+            padding: 5px 10px; 
+            background: #ffffff; 
         }
-
-        .item-label { font-size: 9px; color: #cbd5e1; text-transform: uppercase; }
-        .col-calibre { font-size: 18px; font-weight: 900; color: #ffffff; }
-        .val-prom { font-size: 16px; font-weight: 600; color: #94a3b8; }
-        .val-ult { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 5px; }
+        .item-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: -2px; }
+        .col-calibre { font-size: 16px; font-weight: 800; color: #1e3c72; }
+        .val-prom { font-size: 15px; font-weight: 600; color: #64748b; }
+        .val-ult { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
         
-        /* ESTADOS VISUALES */
-        .status-ok { color: #4ade80; }      /* Verde: Correcto ✔ */
-        .status-bajo { color: #f87171; }    /* Rojo: Bajo peso ▼ */
-        .status-sobre { color: #fbbf24; }   /* Amarillo/Naranja: Sobre peso ▲ */
+        /* ICONOS DE ESTADO */
+        .status-bajo { color: #ef4444; }   /* Rojo: Bajó peso ▼ */
+        .status-alto { color: #f59e0b; }   /* Amarillo: Subió peso ▲ */
+        .status-ok { color: #22c55e; }     /* Verde: En promedio ● */
         
-        .alerta-critica { background: #450a0a; border: 1px solid #f87171; }
+        #estadoSync { font-size: 10px; color: #94a3b8; }
     </style>
 </head>
 <body>
     <header>
         <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo">
-        <span id="tituloHeader">MONITOREO DE PROCESO</span>
-        <span id="estadoSync" style="font-size: 10px; color: #94a3b8;">--:--</span>
+        MONITOREO TV
+        <div id="estadoSync" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">Cargando...</div>
     </header>
 
     <div class="main">
         <div class="panel">
-            <div class="chart-title" id="tituloExportadora">Cargando...</div>
+            <div class="chart-header">
+                <div class="chart-title" id="tituloExportadora">--</div>
+                <div id="fechaHoy" style="font-size: 12px; color: #64748b;">--/--/--</div>
+            </div>
             <div class="chart-container">
                 <canvas id="graficoPesosTV"></canvas>
             </div>
         </div>
 
         <div class="sidebar">
+            <div class="mini-kpis">
+                <div class="kpi">
+                    <div class="kpi-label">Muestras</div>
+                    <div class="kpi-value" id="kpiCajas">0</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Calibres</div>
+                    <div class="kpi-value" id="kpiCalibres">0</div>
+                </div>
+            </div>
+
             <div class="panel resumen-box">
-                <div class="resumen-title">COMPARATIVO DE ÚLTIMO PESO</div>
+                <div class="resumen-title">Último vs Promedio</div>
                 <div class="resumen-lista" id="resumenCalibres"></div>
             </div>
         </div>
@@ -72,9 +90,9 @@
         let graficoTV = null;
         let cargando = false;
 
-        function normalizarNumero(v) {
-            if (!v) return NaN;
-            return parseFloat(String(v).trim().replace(",", "."));
+        function normalizarNumero(valor) {
+            if (!valor) return NaN;
+            return parseFloat(String(valor).trim().replace(",", "."));
         }
 
         async function refrescarPantalla() {
@@ -83,14 +101,18 @@
             try {
                 const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
                 const data = await response.json();
-                const hoy = new Date().toISOString().split('T')[0];
                 
-                const registrosHoy = data.filter(r => r[0] && new Date(r[0]).toISOString().split('T')[0] === hoy);
-                if (registrosHoy.length === 0) return;
+                const hoyStr = new Date().toISOString().split('T')[0];
+                const registrosHoy = data.filter(r => r[0] && new Date(r[0]).toISOString().split('T')[0] === hoyStr);
+                
+                if (registrosHoy.length === 0) {
+                    document.getElementById("tituloExportadora").innerText = "Sin datos hoy";
+                    return;
+                }
 
                 const ultimo = registrosHoy[registrosHoy.length - 1];
                 const exp = ultimo[3], varNombre = ultimo[7];
-                document.getElementById("tituloExportadora").innerText = `${exp} | ${varNombre}`;
+                document.getElementById("tituloExportadora").innerText = `${exp} - ${varNombre}`;
 
                 const filtrados = registrosHoy.filter(r => r[3] === exp && r[7] === varNombre);
                 const resumen = {}, ultimos = {};
@@ -104,42 +126,42 @@
                     }
                 });
 
-                const cals = Object.keys(resumen).sort((a,b) => parseInt(a)-parseInt(b));
+                const cals = Object.keys(resumen).sort((a, b) => parseInt(a) - parseInt(b));
+                document.getElementById("kpiCajas").innerText = filtrados.length;
+                document.getElementById("kpiCalibres").innerText = cals.length;
+                document.getElementById("fechaHoy").innerText = new Date().toLocaleDateString();
 
                 document.getElementById("resumenCalibres").innerHTML = cals.map(c => {
                     const p = resumen[c];
                     const prom = p.reduce((a,b) => a+b, 0) / p.length;
                     const ult = ultimos[c];
                     
-                    let icon = "✔", clase = "status-ok", alerta = "";
-                    
-                    // Lógica solicitada:
-                    if (ult < prom - 0.1) { 
-                        // Bajo peso: Flecha Roja Abajo
-                        icon = "▼"; 
-                        clase = "status-bajo"; 
-                        alerta = "alerta-critica";
-                    } else if (ult > prom + 0.1) {
-                        // Sobre peso: Flecha Amarilla Arriba
-                        icon = "▲"; 
-                        clase = "status-sobre";
-                    }
+                    let icon = "●", clase = "status-ok";
+                    const dif = ult - prom;
+
+                    if (dif < -0.05) { icon = "▼"; clase = "status-bajo"; }
+                    else if (dif > 0.05) { icon = "▲"; clase = "status-alto"; }
 
                     return `
-                    <div class="fila-comparativa ${alerta}">
+                    <div class="fila-comparativa">
                         <div class="col-calibre">C${c}</div>
                         <div>
-                            <div class="item-label">Prom.</div>
-                            <div class="val-prom">${prom.toFixed(2)}</div>
+                            <span class="item-label">Promedio</span>
+                            <span class="val-prom">${prom.toFixed(2)}</span>
                         </div>
                         <div class="val-ult ${clase}">
-                            ${ult.toFixed(2)} <span>${icon}</span>
+                            <div style="display:flex; flex-direction:column">
+                                <span class="item-label">Último</span>
+                                <span>${ult.toFixed(2)}</span>
+                            </div>
+                            <span style="font-size:14px; margin-left:auto">${icon}</span>
                         </div>
                     </div>`;
                 }).join("");
 
                 actualizarGrafico(filtrados, exp, varNombre);
                 document.getElementById("estadoSync").innerText = "Act: " + new Date().toLocaleTimeString();
+
             } catch (e) { console.error(e); } finally { cargando = false; }
         }
 
@@ -155,21 +177,19 @@
             const datasets = Object.keys(grupos).sort((a,b)=>parseInt(a)-parseInt(b)).map((c, i) => ({
                 label: `C${c}`, 
                 data: grupos[c], 
-                borderColor: `hsl(${i * 55}, 70%, 60%)`,
+                borderColor: `hsl(${i * 60}, 65%, 45%)`,
+                backgroundColor: `hsl(${i * 60}, 65%, 45%)`,
                 tension: 0.3, pointRadius: 3, borderWidth: 2
             }));
 
             if (graficoTV) graficoTV.destroy();
             graficoTV = new Chart(ctx, {
                 type: 'line',
-                data: { labels: Array.from({length: 25}, (_,i)=>i+1), datasets },
+                data: { labels: Array.from({length: 20}, (_,i)=>i+1), datasets },
                 options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { 
-                        y: { grid: {color: '#334155'}, ticks: {color: '#94a3b8', font: {size: 11}} }, 
-                        x: { display: false } 
-                    },
-                    plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', boxWidth: 12, font: {size: 10} } } }
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    scales: { y: { grid: {color: '#f0f0f0'} }, x: { display: false } },
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: {size: 10} } } }
                 }
             });
         }
