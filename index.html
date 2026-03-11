@@ -113,7 +113,7 @@
                     <option>Granel</option>
                     <option>CEM</option>
                 </select>
-                <select id="variedad" required>
+                <select id="variedad" required onchange="actualizarGraficoDesdeFiltro()">
                     <option value="">Variedad</option>
                     <option>Royal Gala</option>
                     <option>Red Delicious</option>
@@ -305,20 +305,22 @@
             });
         }
 
-        // --- ESTA ES LA FUNCIÓN QUE CAMBIAMOS PARA EL COMPORTAMIENTO AUTOMÁTICO ---
         function actualizarGrafico(registros) {
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
             
-            // 1. Prioridad: Si el selector tiene algo, lo usamos.
-            // 2. Si el selector está vacío (Modo TV), detectamos la última exportadora de los registros.
             let expSel = document.getElementById("exportadora").value;
+            let varSel = document.getElementById("variedad").value;
             
+            // DETECCIÓN AUTOMÁTICA (MODO TV O INICIAL)
             if ((!expSel || expSel === "") && registros.length > 0) {
-                expSel = String(registros[registros.length - 1][3]).trim();
-                document.getElementById("tituloGrafico").innerText = "Seguimiento: " + expSel;
+                const ultimo = registros[registros.length - 1];
+                expSel = String(ultimo[3]).trim();
+                varSel = String(ultimo[7]).trim();
+                document.getElementById("tituloGrafico").innerText = `Seguimiento: ${expSel} - ${varSel}`;
             } else if (expSel !== "") {
-                document.getElementById("tituloGrafico").innerText = "Seguimiento: " + expSel;
+                // SI HAY SELECCIÓN MANUAL
+                document.getElementById("tituloGrafico").innerText = `Seguimiento: ${expSel} ${varSel ? '- ' + varSel : ''}`;
             }
 
             actualizarEstadoObjetivos();
@@ -328,8 +330,12 @@
                 return;
             }
 
-            // Filtrar SOLO los datos de la exportadora activa
-            const filtrados = registros.filter(row => String(row[3]).trim() === expSel);
+            // FILTRADO POR EXPORTADORA Y VARIEDAD (SI EXISTE)
+            const filtrados = registros.filter(row => {
+                const matchExp = String(row[3]).trim() === expSel;
+                const matchVar = varSel ? String(row[7]).trim() === varSel : true;
+                return matchExp && matchVar;
+            });
             
             const grupos = {};
             filtrados.forEach(row => {
@@ -385,7 +391,6 @@
         function limpiarFormulario() {
             document.getElementById("form").reset();
             document.getElementById("operador").value = operadorData.operador;
-            // No cargamos registros aquí para no resetear el filtro del gráfico si se está usando como TV
         }
 
         function iniciarAutoRefresh() {
