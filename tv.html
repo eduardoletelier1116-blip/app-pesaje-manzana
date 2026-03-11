@@ -50,9 +50,8 @@
         .label-mini { font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1; margin-bottom: 1px; }
         .val-txt { font-size: 14px; font-weight: 800; }
         
-        .txt-prom { color: #64748b; }
-        .txt-ok { color: #10b981; }
-        .txt-error { color: #dc2626; }
+        .txt-ok { color: #10b981; } /* Verde */
+        .txt-error { color: #dc2626; } /* Rojo */
     </style>
 </head>
 <body>
@@ -140,7 +139,6 @@
         function actualizarGrafico(registros, exp, varN) {
             const ctx = document.getElementById("graficoPesosTV").getContext("2d");
             document.getElementById("tituloExportadora").innerText = `${exp} - ${varN}`;
-            
             const grupos = {};
             registros.forEach(row => {
                 const cal = String(row[5]).trim(), peso = normalizarNumero(row[9]);
@@ -148,62 +146,27 @@
                 if (!grupos[cal]) grupos[cal] = [];
                 grupos[cal].push(peso);
             });
-
             const calibresSorted = Object.keys(grupos).sort((a,b)=>parseInt(a)-parseInt(b));
             const maxC = Math.max(...Object.values(grupos).map(a => a.length), 0);
-            
             const datasets = [];
             calibresSorted.forEach((cal, i) => {
                 const color = `hsl(${i * 60}, 70%, 50%)`;
                 const obj = obtenerObjetivo(cal);
-                
-                // Línea de Peso Real (Sólida)
                 datasets.push({
-                    label: `C${cal} Real`,
-                    data: grupos[cal],
-                    borderColor: color,
-                    backgroundColor: color,
-                    tension: 0.3,
-                    pointRadius: 4,
-                    borderWidth: 2,
-                    fill: false
+                    label: `C${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color,
+                    tension: 0.3, pointRadius: 4, borderWidth: 2, fill: false
                 });
-
-                // Línea de Objetivo (Punteada)
                 if (obj) {
                     datasets.push({
-                        label: `C${cal} Obj`,
-                        data: Array(grupos[cal].length).fill(obj),
-                        borderColor: color,
-                        borderDash: [6, 4], // Efecto punteado
-                        pointRadius: 0,
-                        borderWidth: 1.5,
-                        fill: false
+                        label: `C${cal} Obj`, data: Array(grupos[cal].length).fill(obj),
+                        borderColor: color, borderDash: [6, 4], pointRadius: 0, borderWidth: 1.5, fill: false
                     });
                 }
             });
-
             if (graficoTV) graficoTV.destroy();
             graficoTV = new Chart(ctx, {
-                type: 'line', 
-                data: { labels: Array.from({length: maxC}, (_, i)=>`Caja ${i+1}`), datasets },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    animation: false,
-                    scales: { y: { beginAtZero: false, grid: { color: '#f0f0f0' } } },
-                    plugins: { 
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { 
-                                boxWidth: 10, 
-                                font: { size: 9 },
-                                // Filtrar leyenda para no saturar con los labels de "Obj"
-                                filter: (item) => !item.text.includes('Obj') 
-                            } 
-                        } 
-                    }
-                }
+                type: 'line', data: { labels: Array.from({length: maxC}, (_, i)=>`C${i+1}`), datasets },
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, filter: (item) => !item.text.includes('Obj') } } } }
             });
         }
 
@@ -238,22 +201,37 @@
                 document.getElementById("fechaHoy").innerText = new Date().toLocaleDateString("es-CL");
 
                 document.getElementById("resumenCalibres").innerHTML = sorted.map(c => {
-                    const prom = resumen[c].reduce((a,b) => a+b, 0) / resumen[c].length;
+                    const pesos = resumen[c];
+                    const prom = pesos.reduce((a,b) => a+b, 0) / pesos.length;
                     const ult = ultimos[c], obj = obtenerObjetivo(c);
-                    let icon = "✔", colorC = "txt-ok";
+                    
+                    // LÓGICA DE COLORES ±100g
+                    let clProm = "txt-ok", clUlt = "txt-ok", icon = "✔";
+                    
                     if (obj) {
-                        const dif = ult - obj;
-                        if (dif > 0.10) { icon = "▲"; colorC = "txt-error"; }
-                        else if (dif < -0.10) { icon = "▼"; colorC = "txt-error"; }
+                        // Color para el Promedio
+                        if (Math.abs(prom - obj) > 0.10) clProm = "txt-error";
+                        
+                        // Color e Icono para la Última Caja
+                        const difUlt = ult - obj;
+                        if (difUlt > 0.10) { icon = "▲"; clUlt = "txt-error"; }
+                        else if (difUlt < -0.10) { icon = "▼"; clUlt = "txt-error"; }
                     }
+
                     return `
                     <div class="fila-tv">
                         <div class="col-cal">
                             <span class="txt-cal-num">C${c}</span>
                             <span class="txt-obj-ref">${obj ? obj.toFixed(2) : '--'}</span>
                         </div>
-                        <div class="col-val"><span class="label-mini">Prom.</span><span class="val-txt txt-prom">${prom.toFixed(2)}</span></div>
-                        <div class="col-val"><span class="label-mini">Últ.</span><span class="val-txt ${colorC}">${ult.toFixed(2)} ${icon}</span></div>
+                        <div class="col-val">
+                            <span class="label-mini">Prom.</span>
+                            <span class="val-txt ${clProm}">${prom.toFixed(2)}</span>
+                        </div>
+                        <div class="col-val">
+                            <span class="label-mini">Últ.</span>
+                            <span class="val-txt ${clUlt}">${ult.toFixed(2)} ${icon}</span>
+                        </div>
                     </div>`;
                 }).join("");
 
