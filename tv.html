@@ -10,7 +10,7 @@
         .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 38px; }
         .codigo-empresa { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 500; opacity: 0.8; }
         
-        .main { display: grid; grid-template-columns: 2.3fr 0.9fr; gap: 15px; padding: 15px; height: calc(100vh - 65px); box-sizing: border-box; }
+        .main { display: grid; grid-template-columns: 2.1fr 1.1fr; gap: 15px; padding: 15px; height: calc(100vh - 65px); box-sizing: border-box; }
         .panel { background: white; border-radius: 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); padding: 15px; display: flex; flex-direction: column; min-height: 0; }
         
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -32,24 +32,31 @@
         .resumen-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #f4f6f9; }
         
         .resumen-lista { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
+            display: flex;
+            flex-direction: column;
+            gap: 6px; 
             overflow-y: auto; 
             padding-right: 5px;
         }
-        .fila-simple { 
-            display: flex; 
-            justify-content: space-between; 
+        .fila-comparativa { 
+            display: grid; 
+            grid-template-columns: 0.6fr 1.2fr 1.2fr; 
             align-items: center; 
             border: 1px solid #e5e7eb; 
             border-radius: 8px; 
-            padding: 8px 10px; 
+            padding: 10px; 
             background: #fafafa; 
         }
-        .fila-calibre { font-size: 14px; font-weight: 700; color: #1e3c72; }
-        .fila-promedio { font-size: 15px; font-weight: 800; color: #059669; }
-        .fila-promedio.fuera { color: #dc2626; }
+        .item-label { font-size: 10px; color: #6b7280; text-transform: uppercase; display: block; }
+        .col-calibre { font-size: 18px; font-weight: 800; color: #1e3c72; border-right: 1px solid #eee; }
+        .col-data { padding-left: 10px; }
+        .val-prom { font-size: 16px; font-weight: 700; color: #374151; }
+        .val-ult { font-size: 16px; font-weight: 800; }
+        
+        /* Colores para la tendencia */
+        .tendencia-sube { color: #dc2626; } /* Rojo si el último es más pesado que el promedio */
+        .tendencia-baja { color: #2563eb; } /* Azul/Verde si es más liviano */
+        .fuera-rango { background: #fff1f2; border-color: #fecaca; }
     </style>
 </head>
 <body>
@@ -76,7 +83,7 @@
         <div class="sidebar">
             <div class="mini-kpis">
                 <div class="kpi">
-                    <div class="kpi-label">Muestras (Exp-Var)</div>
+                    <div class="kpi-label">Muestras (Filtro)</div>
                     <div class="kpi-value" id="kpiCajas">0</div>
                 </div>
                 <div class="kpi">
@@ -91,7 +98,7 @@
             </div>
 
             <div class="panel resumen-box">
-                <div class="resumen-title">Promedios: <span id="nombreExpResumen">...</span></div>
+                <div class="resumen-title">Comparativa: <span id="nombreExpResumen">...</span></div>
                 <div class="resumen-lista" id="resumenCalibres"></div>
             </div>
         </div>
@@ -172,12 +179,12 @@
                 const color = generarColor(i);
                 const obj = obtenerObjetivo(cal);
                 datasets.push({
-                    label: `C${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color, 
+                    label: `C${cal}`, data: grupos[cal], borderColor: color, backgroundColor: color, 
                     tension: 0.3, fill: false, pointRadius: 4, borderWidth: 2
                 });
                 if (obj) {
                     datasets.push({
-                        label: `C${cal} Obj`,
+                        label: `Obj ${cal}`,
                         data: Array(grupos[cal].length).fill(obj),
                         borderColor: color, borderDash: [5, 5], pointRadius: 0, borderWidth: 1, fill: false
                     });
@@ -191,7 +198,7 @@
                 options: { 
                     responsive: true, maintainAspectRatio: false, animation: false,
                     scales: { y: { beginAtZero: false, grid: { color: '#f0f0f0' } } },
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
                 }
             });
         }
@@ -213,26 +220,27 @@
                     return;
                 }
 
-                // IDENTIFICAR ÚLTIMA EXPORTADORA Y VARIEDAD ACTIVA
                 const ultimoRegistro = registrosHoy[registrosHoy.length - 1];
                 const ultimaExp = String(ultimoRegistro[3]).trim();
                 const ultimaVar = String(ultimoRegistro[7]).trim();
                 
-                document.getElementById("nombreExpResumen").innerText = `${ultimaExp} (${ultimaVar})`;
+                document.getElementById("nombreExpResumen").innerText = ultimaVar;
                 
-                // FILTRADO DOBLE: EXPORTADORA + VARIEDAD
                 const filtradosFinal = registrosHoy.filter(r => 
                     String(r[3]).trim() === ultimaExp && 
                     String(r[7]).trim() === ultimaVar
                 );
 
-                const resumen = {};
+                const resumen = {}; // Guardará todos los pesos para promediar
+                const ultimosPesos = {}; // Guardará solo el valor más reciente por calibre
+
                 filtradosFinal.forEach(r => {
                     const c = String(r[5]).trim(); 
                     const p = normalizarNumero(r[9]);
                     if (!isNaN(p)) { 
                         if(!resumen[c]) resumen[c] = []; 
                         resumen[c].push(p); 
+                        ultimosPesos[c] = p; // Se sobreescribe hasta quedar con el último
                     }
                 });
 
@@ -242,17 +250,40 @@
                 document.getElementById("fechaHoy").innerText = new Date().toLocaleDateString("es-CL");
 
                 const listaHtml = calsSorted.map(c => {
-                    const p = resumen[c].reduce((a,b) => a+b, 0) / resumen[c].length;
-                    const o = obtenerObjetivo(c);
-                    const clase = (o && Math.abs(p - o) > 0.1) ? 'fuera' : '';
-                    return `<div class="fila-simple"><div class="fila-calibre">C${c}</div><div class="fila-promedio ${clase}">${p.toFixed(2)}</div></div>`;
+                    const pesos = resumen[c];
+                    const prom = pesos.reduce((a,b) => a+b, 0) / pesos.length;
+                    const ult = ultimosPesos[c];
+                    const obj = obtenerObjetivo(c);
+                    
+                    // Flecha de tendencia comparando último vs promedio
+                    const tendenciaIcon = ult > prom ? "▲" : (ult < prom ? "▼" : "●");
+                    const tendenciaClass = ult > prom ? "tendencia-sube" : (ult < prom ? "tendencia-baja" : "");
+                    
+                    // Alerta si el último peso está muy lejos del objetivo
+                    const fueraRango = (obj && Math.abs(ult - obj) > 0.2) ? 'fuera-rango' : '';
+
+                    return `
+                    <div class="fila-comparativa ${fueraRango}">
+                        <div class="col-calibre">
+                            <span class="item-label">Cal.</span>
+                            C${c}
+                        </div>
+                        <div class="col-data">
+                            <span class="item-label">Promedio</span>
+                            <span class="val-prom">${prom.toFixed(2)}</span>
+                        </div>
+                        <div class="col-data">
+                            <span class="item-label">Último Peso</span>
+                            <span class="val-ult ${tendenciaClass}">${ult.toFixed(2)} ${tendenciaIcon}</span>
+                        </div>
+                    </div>`;
                 }).join("");
                 
                 document.getElementById("resumenCalibres").innerHTML = listaHtml;
 
                 document.getElementById("infoObjetivosTV").innerHTML = reglasObjetivo.length 
-                    ? reglasObjetivo.map(r => `C${r.desde}-${r.hasta}: <b>${r.objetivo.toFixed(2)}kg</b>`).join(" | ")
-                    : "Sin objetivos cargados.";
+                    ? reglasObjetivo.map(r => `C${r.desde}-${r.hasta}: <b>${r.objetivo.toFixed(2)}</b>`).join(" | ")
+                    : "Sin objetivos.";
 
                 actualizarGrafico(filtradosFinal, ultimaExp, ultimaVar);
                 document.getElementById("estadoSync").innerText = "Act: " + new Date().toLocaleTimeString();
