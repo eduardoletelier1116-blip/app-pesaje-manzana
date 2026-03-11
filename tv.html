@@ -5,63 +5,74 @@
     <title>Modo TV - Registro de Pesos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Ajustes para TV: Menos espacios, más visibilidad */
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; overflow: hidden; }
-        header { background: #1e3c72; color: white; padding: 10px 24px; text-align: center; font-size: 22px; font-weight: 600; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 32px; }
+        header { background: #1e3c72; color: white; padding: 12px 24px; text-align: center; font-size: 24px; font-weight: 600; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 38px; }
+        .codigo-empresa { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 500; opacity: 0.8; }
         
-        .main { display: grid; grid-template-columns: 2fr 1.2fr; gap: 12px; padding: 12px; height: calc(100vh - 60px); box-sizing: border-box; }
-        .panel { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 12px; display: flex; flex-direction: column; min-height: 0; }
+        .main { display: grid; grid-template-columns: 2fr 1.2fr; gap: 15px; padding: 15px; height: calc(100vh - 65px); box-sizing: border-box; }
+        .panel { background: white; border-radius: 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); padding: 15px; display: flex; flex-direction: column; min-height: 0; }
         
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .chart-title { font-size: 19px; font-weight: 700; color: #1e3c72; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .chart-title { font-size: 22px; font-weight: 700; color: #1e3c72; }
+        .chart-subinfo { font-size: 12px; color: #6b7280; text-align: right; }
         .chart-container { position: relative; flex: 1; min-height: 0; }
         
-        .sidebar { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
-        .mini-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .kpi { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px; text-align: center; }
-        .kpi-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
-        .kpi-value { font-size: 22px; font-weight: 800; color: #1e3c72; }
+        .sidebar { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+        .mini-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .kpi { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; text-align: center; }
+        .kpi-label { font-size: 11px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; }
+        .kpi-value { font-size: 26px; font-weight: 800; color: #1e3c72; }
+        
+        .objetivos-box { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 10px; }
+        .objetivos-title { font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px; }
+        .objetivos-texto { font-size: 13px; color: #b45309; font-weight: 600; }
 
         .resumen-box { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .resumen-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #f4f6f9; color: #64748b; }
+        .resumen-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #f4f6f9; }
         
-        .resumen-lista { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; padding-right: 2px; }
-        
-        /* FILAS REDUCIDAS PARA TV */
-        .fila-comparativa { 
+        .resumen-lista { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            overflow-y: auto; 
+            padding-right: 5px;
+        }
+        .fila-tv { 
             display: grid; 
-            grid-template-columns: 0.5fr 1fr 1fr; 
+            grid-template-columns: 0.6fr 1fr 1.2fr; 
             align-items: center; 
-            border: 1px solid #eef2f6; 
+            border: 1px solid #e5e7eb; 
             border-radius: 8px; 
-            padding: 6px 12px; 
+            padding: 8px 12px; 
             background: #fafafa; 
         }
-        .item-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; display: block; }
-        .col-calibre { font-size: 18px; font-weight: 800; color: #1e3c72; }
-        .val-prom { font-size: 15px; font-weight: 700; color: #475569; }
-        .val-ult { font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
+        .col-cal { font-size: 18px; font-weight: 800; color: #1e3c72; }
+        .col-val { display: flex; flex-direction: column; }
+        .label-mini { font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .val-txt { font-size: 17px; font-weight: 800; }
         
-        /* COLORES E ICONOS */
-        .tendencia-baja { color: #dc2626; } /* ROJO: falta peso ▼ */
-        .tendencia-sube { color: #f59e0b; } /* NARANJA: sobra peso ▲ */
-        .tendencia-ok { color: #10b981; }   /* VERDE: peso OK ● o ✔ */
-        
-        #estadoSync { font-size: 11px; color: #6b7280; text-align: right; }
+        /* ALERTAS */
+        .txt-prom { color: #64748b; }
+        .txt-ok { color: #10b981; }
+        .txt-error { color: #dc2626; }
     </style>
 </head>
 <body>
     <header>
-        <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo">
-        MONITOREO DE PESOS (MODO TV)
+        <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo" alt="Fresh-Pak">
+        MONITOREO DE PESOS EN TIEMPO REAL
+        <div class="codigo-empresa">R02 POE 29</div>
     </header>
 
     <div class="main">
         <div class="panel">
             <div class="chart-header">
-                <div class="chart-title" id="tituloExportadora">Cargando datos...</div>
-                <div id="estadoSync">Sincronizando...</div>
+                <div class="chart-title" id="tituloExportadora">Cargando...</div>
+                <div class="chart-subinfo">
+                    <div id="fechaHoy">--/--/----</div>
+                    <div id="estadoSync">Sincronizando...</div>
+                </div>
             </div>
             <div class="chart-container">
                 <canvas id="graficoPesosTV"></canvas>
@@ -75,23 +86,28 @@
                     <div class="kpi-value" id="kpiCajas">0</div>
                 </div>
                 <div class="kpi">
-                    <div class="kpi-label">Fecha</div>
-                    <div id="fechaHoy" style="font-size: 13px; font-weight: bold; margin-top: 5px;">--/--/--</div>
+                    <div class="kpi-label">Calibres</div>
+                    <div class="kpi-value" id="kpiCalibres">0</div>
                 </div>
             </div>
 
+            <div class="objetivos-box">
+                <div class="objetivos-title">Límites de Peso (Objetivos)</div>
+                <div class="objetivos-texto" id="infoObjetivosTV">Cargando...</div>
+            </div>
+
             <div class="panel resumen-box">
-                <div class="resumen-title">Último Peso vs Promedio</div>
+                <div class="resumen-title">Estado por Calibre</div>
                 <div class="resumen-lista" id="resumenCalibres"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // MANTENEMOS TU LÓGICA ORIGINAL DE CONEXIÓN
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
         let graficoTV = null;
         let cargando = false;
+        let reglasObjetivo = [];
 
         function normalizarNumero(valor) {
             if (valor === null || valor === undefined || valor === "") return NaN;
@@ -99,7 +115,6 @@
             return parseFloat(limpio);
         }
 
-        // Función de fecha original para no romper el filtro
         function formatDate(date) {
             if (!date) return "";
             if (date instanceof Date) {
@@ -115,11 +130,77 @@
             return date;
         }
 
+        async function cargarObjetivos() {
+            try {
+                const response = await fetch(SCRIPT_URL + "?tipo=objetivos&t=" + new Date().getTime());
+                const data = await response.json();
+                if (Array.isArray(data) && data.length > 1) {
+                    reglasObjetivo = data.slice(1).map(r => ({
+                        desde: parseInt(r[0]), 
+                        hasta: parseInt(r[1]), 
+                        objetivo: normalizarNumero(r[2])
+                    })).filter(r => !isNaN(r.desde) && !isNaN(r.objetivo));
+                }
+            } catch (e) { console.error("Error objetivos:", e); }
+        }
+
+        function obtenerObjetivo(calibre) {
+            const c = parseInt(calibre);
+            const r = reglasObjetivo.find(reg => c >= reg.desde && c <= reg.hasta);
+            return r ? r.objetivo : null;
+        }
+
+        function generarColor(i) {
+            const paleta = ["#1e3c72", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#71717a"];
+            return paleta[i % paleta.length];
+        }
+
+        function actualizarGrafico(registros, exportadora, variedad) {
+            const canvas = document.getElementById("graficoPesosTV");
+            const ctx = canvas.getContext("2d");
+            document.getElementById("tituloExportadora").innerText = `${exportadora} - ${variedad}`;
+
+            const grupos = {};
+            registros.forEach(row => {
+                const cal = String(row[5]).trim();
+                const peso = normalizarNumero(row[9]);
+                if (!cal || isNaN(peso)) return;
+                if (!grupos[cal]) grupos[cal] = [];
+                grupos[cal].push(peso);
+            });
+
+            const maxCajas = Math.max(...Object.values(grupos).map(a => a.length), 0);
+            const labels = Array.from({ length: maxCajas }, (_, i) => `Caja ${i + 1}`);
+            const calibres = Object.keys(grupos).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            const datasets = [];
+            calibres.forEach((cal, i) => {
+                const color = generarColor(i);
+                const obj = obtenerObjetivo(cal);
+                datasets.push({
+                    label: `C${cal}`, data: grupos[cal], borderColor: color, backgroundColor: color, 
+                    tension: 0.3, fill: false, pointRadius: 4, borderWidth: 2
+                });
+            });
+
+            if (graficoTV) graficoTV.destroy();
+            graficoTV = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    scales: { y: { beginAtZero: false, grid: { color: '#f0f0f0' } } },
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
+            });
+        }
+
         async function refrescarPantalla() {
             if (cargando) return;
             cargando = true;
 
             try {
+                await cargarObjetivos();
                 const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
                 const data = await response.json();
                 
@@ -127,15 +208,13 @@
                 const registrosHoy = data.filter(r => r[0] && formatDate(r[0]) === hoy);
                 
                 if (registrosHoy.length === 0) {
-                    document.getElementById("tituloExportadora").innerText = "Sin registros hoy";
+                    document.getElementById("tituloExportadora").innerText = "Sin datos hoy";
                     return;
                 }
 
                 const ultimoRegistro = registrosHoy[registrosHoy.length - 1];
                 const ultimaExp = String(ultimoRegistro[3]).trim();
                 const ultimaVar = String(ultimoRegistro[7]).trim();
-                
-                document.getElementById("tituloExportadora").innerText = `${ultimaExp} - ${ultimaVar}`;
                 
                 const filtradosFinal = registrosHoy.filter(r => 
                     String(r[3]).trim() === ultimaExp && 
@@ -151,95 +230,61 @@
                     if (!isNaN(p)) { 
                         if(!resumen[c]) resumen[c] = []; 
                         resumen[c].push(p); 
-                        ultimosPesos[c] = p; 
+                        ultimosPesos[c] = p; // Guarda la última caja de este calibre
                     }
                 });
 
                 const calsSorted = Object.keys(resumen).sort((a, b) => parseInt(a) - parseInt(b));
                 document.getElementById("kpiCajas").innerText = filtradosFinal.length;
+                document.getElementById("kpiCalibres").innerText = calsSorted.length;
                 document.getElementById("fechaHoy").innerText = new Date().toLocaleDateString("es-CL");
 
                 const listaHtml = calsSorted.map(c => {
                     const pesos = resumen[c];
                     const prom = pesos.reduce((a,b) => a+b, 0) / pesos.length;
                     const ult = ultimosPesos[c];
+                    const obj = obtenerObjetivo(c);
                     
-                    // LÓGICA DE ICONOS SOLICITADA
-                    let icon = "●"; 
-                    let clase = "tendencia-ok";
-                    const diff = ult - prom;
-
-                    if (diff < -0.05) { // Bajó peso (Rojo)
-                        icon = "▼";
-                        clase = "tendencia-baja";
-                    } else if (diff > 0.05) { // Subió peso (Naranja/Amarillo)
-                        icon = "▲";
-                        clase = "tendencia-sube";
-                    } else { // Peso OK (Ticket o Punto Verde)
-                        icon = "✔";
-                        clase = "tendencia-ok";
+                    // LÓGICA DE ALERTA (100g de tolerancia respecto al objetivo)
+                    let icon = "✔";
+                    let colorClase = "txt-ok";
+                    
+                    if (obj) {
+                        const dif = ult - obj;
+                        if (dif > 0.10) { icon = "▲"; colorClase = "txt-error"; }
+                        else if (dif < -0.10) { icon = "▼"; colorClase = "txt-error"; }
                     }
 
                     return `
-                    <div class="fila-comparativa">
-                        <div class="col-calibre">C${c}</div>
-                        <div>
-                            <span class="item-label">Promedio</span>
-                            <span class="val-prom">${prom.toFixed(2)}</span>
+                    <div class="fila-tv">
+                        <div class="col-cal">C${c}</div>
+                        <div class="col-val">
+                            <span class="label-mini">Promedio</span>
+                            <span class="val-txt txt-prom">${prom.toFixed(2)}</span>
                         </div>
-                        <div class="val-ult ${clase}">
-                            <div style="display:flex; flex-direction:column">
-                                <span class="item-label">Último</span>
-                                <span>${ult.toFixed(2)}</span>
-                            </div>
-                            <span style="font-size:18px">${icon}</span>
+                        <div class="col-val">
+                            <span class="label-mini">Última Caja</span>
+                            <span class="val-txt ${colorClase}">${ult.toFixed(2)} ${icon}</span>
                         </div>
                     </div>`;
                 }).join("");
                 
                 document.getElementById("resumenCalibres").innerHTML = listaHtml;
+
+                document.getElementById("infoObjetivosTV").innerHTML = reglasObjetivo.length 
+                    ? reglasObjetivo.map(r => `C${r.desde}-${r.hasta}: <b>${r.objetivo.toFixed(2)}kg</b>`).join(" | ")
+                    : "Sin objetivos cargados.";
+
                 actualizarGrafico(filtradosFinal, ultimaExp, ultimaVar);
-                document.getElementById("estadoSync").innerText = "Actualizado: " + new Date().toLocaleTimeString();
+                document.getElementById("estadoSync").innerText = "Act: " + new Date().toLocaleTimeString();
 
             } catch (e) { 
                 console.error(e);
-                document.getElementById("estadoSync").innerText = "Error de red";
+                document.getElementById("estadoSync").innerText = "Error conexión";
             } finally { cargando = false; }
         }
 
-        function actualizarGrafico(registros, exportadora, variedad) {
-            const canvas = document.getElementById("graficoPesosTV");
-            const ctx = canvas.getContext("2d");
-            const grupos = {};
-            registros.forEach(row => {
-                const cal = String(row[5]).trim();
-                const peso = normalizarNumero(row[9]);
-                if (!cal || isNaN(peso)) return;
-                if (!grupos[cal]) grupos[cal] = [];
-                grupos[cal].push(peso);
-            });
-
-            const datasets = Object.keys(grupos).sort((a,b)=>parseInt(a)-parseInt(b)).map((cal, i) => {
-                const color = `hsl(${i * 60}, 70%, 50%)`;
-                return {
-                    label: `C${cal}`, data: grupos[cal], borderColor: color, backgroundColor: color,
-                    tension: 0.3, pointRadius: 3, borderWidth: 2
-                };
-            });
-
-            if (graficoTV) graficoTV.destroy();
-            graficoTV = new Chart(ctx, {
-                type: 'line',
-                data: { labels: Array.from({ length: 20 }, (_, i) => i + 1), datasets },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, animation: false,
-                    scales: { y: { beginAtZero: false } },
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
-                }
-            });
-        }
-
-        setInterval(refrescarPantalla, 4000);
+        setInterval(refrescarPantalla, 3000);
         window.onload = refrescarPantalla;
     </script>
 </body>
