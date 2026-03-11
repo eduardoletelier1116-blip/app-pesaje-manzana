@@ -140,6 +140,7 @@
         function actualizarGrafico(registros, exp, varN) {
             const ctx = document.getElementById("graficoPesosTV").getContext("2d");
             document.getElementById("tituloExportadora").innerText = `${exp} - ${varN}`;
+            
             const grupos = {};
             registros.forEach(row => {
                 const cal = String(row[5]).trim(), peso = normalizarNumero(row[9]);
@@ -147,14 +148,62 @@
                 if (!grupos[cal]) grupos[cal] = [];
                 grupos[cal].push(peso);
             });
+
+            const calibresSorted = Object.keys(grupos).sort((a,b)=>parseInt(a)-parseInt(b));
             const maxC = Math.max(...Object.values(grupos).map(a => a.length), 0);
-            const datasets = Object.keys(grupos).sort((a,b)=>parseInt(a)-parseInt(b)).map((cal, i) => ({
-                label: `C${cal}`, data: grupos[cal], borderColor: `hsl(${i * 50}, 70%, 50%)`, tension: 0.3, pointRadius: 3
-            }));
+            
+            const datasets = [];
+            calibresSorted.forEach((cal, i) => {
+                const color = `hsl(${i * 60}, 70%, 50%)`;
+                const obj = obtenerObjetivo(cal);
+                
+                // Línea de Peso Real (Sólida)
+                datasets.push({
+                    label: `C${cal} Real`,
+                    data: grupos[cal],
+                    borderColor: color,
+                    backgroundColor: color,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    borderWidth: 2,
+                    fill: false
+                });
+
+                // Línea de Objetivo (Punteada)
+                if (obj) {
+                    datasets.push({
+                        label: `C${cal} Obj`,
+                        data: Array(grupos[cal].length).fill(obj),
+                        borderColor: color,
+                        borderDash: [6, 4], // Efecto punteado
+                        pointRadius: 0,
+                        borderWidth: 1.5,
+                        fill: false
+                    });
+                }
+            });
+
             if (graficoTV) graficoTV.destroy();
             graficoTV = new Chart(ctx, {
-                type: 'line', data: { labels: Array.from({length: maxC}, (_, i)=>i+1), datasets },
-                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } }
+                type: 'line', 
+                data: { labels: Array.from({length: maxC}, (_, i)=>`Caja ${i+1}`), datasets },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    animation: false,
+                    scales: { y: { beginAtZero: false, grid: { color: '#f0f0f0' } } },
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                boxWidth: 10, 
+                                font: { size: 9 },
+                                // Filtrar leyenda para no saturar con los labels de "Obj"
+                                filter: (item) => !item.text.includes('Obj') 
+                            } 
+                        } 
+                    }
+                }
             });
         }
 
