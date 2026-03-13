@@ -49,8 +49,9 @@
         .col-val { display: flex; flex-direction: column; }
         .label-mini { font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1; margin-bottom: 1px; }
         .val-txt { font-size: 14px; font-weight: 800; line-height: 1.1; }
-        /* HORA ESTILIZADA */
-        .val-hora { font-size: 10px; font-weight: 700; color: #64748b; margin-top: 2px; background: #e2e8f0; border-radius: 3px; padding: 0 3px; width: fit-content; }
+        
+        /* HORA RESALTADA */
+        .val-hora { font-size: 10px; font-weight: 800; color: #475569; background: #e2e8f0; padding: 1px 4px; border-radius: 4px; width: fit-content; margin-top: 2px; }
         
         .txt-ok { color: #10b981; } 
         .txt-error { color: #dc2626; } 
@@ -107,21 +108,29 @@
             return parseFloat(limpio);
         }
 
-        // CORRECCIÓN: Extrae estrictamente la HORA y MINUTO
-        function extraerHora(fechaStr) {
-            if (!fechaStr) return "--:--";
-            const d = new Date(fechaStr);
-            // Si el objeto Date es válido, sacamos HH:mm
-            if (!isNaN(d.getTime())) {
+        // FUNCIÓN MEJORADA: Intenta extraer la hora de cualquier forma
+        function extraerHora(valor) {
+            if (!valor) return "--:--";
+            const str = String(valor);
+            
+            // Intento 1: ¿Es un objeto de fecha?
+            const d = new Date(valor);
+            if (!isNaN(d.getTime()) && str.includes("T")) { // Verifica si tiene formato ISO
                 return d.getHours().toString().padStart(2, '0') + ":" + 
                        d.getMinutes().toString().padStart(2, '0');
             }
-            // Si Google Sheets envía un string tipo "13/03/2026 17:45:00"
-            const partes = String(fechaStr).split(" ");
+
+            // Intento 2: Buscar formato HH:mm:ss o HH:mm con Regex
+            const match = str.match(/(\d{2}:\d{2})/);
+            if (match) return match[1];
+
+            // Intento 3: Si viene como "13/03/2026 17:45"
+            const partes = str.split(" ");
             if (partes.length > 1) {
-                const horaCompleta = partes[1].split(":");
-                return horaCompleta[0] + ":" + horaCompleta[1];
+                const hPart = partes[1].split(":");
+                if (hPart.length >= 2) return hPart[0] + ":" + hPart[1];
             }
+
             return "--:--";
         }
 
@@ -135,6 +144,8 @@
                 const p = date.split("/");
                 return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
             }
+            // Si viene del Sheets como YYYY-MM-DD...
+            if (typeof date === "string" && date.includes("-")) return date.split("T")[0];
             return date;
         }
 
@@ -158,7 +169,6 @@
 
         function actualizarGrafico(registros, exp, varN) {
             const ctx = document.getElementById("graficoPesosTV").getContext("2d");
-            document.getElementById("tituloExportadora").innerText = `${exp} - ${varN}`;
             const grupos = {};
             registros.forEach(row => {
                 const cal = String(row[5]).trim(), peso = normalizarNumero(row[9]);
@@ -197,9 +207,18 @@
                 await cargarObjetivos();
                 const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
                 const data = await response.json();
-                const hoy = formatDate(new Date());
-                const registrosHoy = data.filter(r => r[0] && formatDate(r[0]) === hoy);
-                if (registrosHoy.length === 0) return;
+                
+                // Obtenemos fecha actual para filtrar
+                const dActual = new Date();
+                const hoyStr = dActual.getFullYear() + "-" + 
+                               String(dActual.getMonth() + 1).padStart(2, '0') + "-" + 
+                               String(dActual.getDate()).padStart(2, '0');
+
+                const registrosHoy = data.filter(r => r[0] && formatDate(r[0]).includes(hoyStr));
+                if (registrosHoy.length === 0) {
+                    document.getElementById("estadoSync").innerText = "Sin datos hoy";
+                    return;
+                }
 
                 const ultimoR = registrosHoy[registrosHoy.length - 1];
                 const exp = String(ultimoR[3]).trim(), varN = String(ultimoR[7]).trim();
@@ -219,13 +238,11 @@
                 const sorted = Object.keys(resumen).sort((a, b) => parseInt(a) - parseInt(b));
                 document.getElementById("kpiCajas").innerText = filtrados.length;
                 document.getElementById("kpiCalibres").innerText = sorted.length;
-                document.getElementById("fechaHoy").innerText = new Date().toLocaleDateString("es-CL");
+                document.getElementById("fechaHoy").innerText = dActual.toLocaleDateString("es-CL");
 
                 document.getElementById("resumenCalibres").innerHTML = sorted.map(c => {
-                    const pesos = resumen[c];
-                    const prom = pesos.reduce((a,b) => a+b, 0) / pesos.length;
-                    const ult = ultimos[c], obj = obtenerObjetivo(c);
-                    const h = ultimasHoras[c];
+                    const prom = resumen[c].reduce((a,b) => a+b, 0) / resumen[c].length;
+                    const ult = ultimos[c], obj = obtenerObjetivo(c), h = ultimasHoras[c];
                     
                     let clProm = "txt-ok", clUlt = "txt-ok", icon = "✔";
                     if (obj) {
