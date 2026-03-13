@@ -48,10 +48,11 @@
 
         .col-val { display: flex; flex-direction: column; }
         .label-mini { font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1; margin-bottom: 1px; }
-        .val-txt { font-size: 14px; font-weight: 800; }
+        .val-txt { font-size: 14px; font-weight: 800; line-height: 1.1; }
+        .val-hora { font-size: 9px; font-weight: 600; color: #94a3b8; margin-top: 1px; }
         
-        .txt-ok { color: #10b981; } /* Verde */
-        .txt-error { color: #dc2626; } /* Rojo */
+        .txt-ok { color: #10b981; } 
+        .txt-error { color: #dc2626; } 
     </style>
 </head>
 <body>
@@ -103,6 +104,18 @@
             if (valor === null || valor === undefined || valor === "") return NaN;
             const limpio = String(valor).trim().replace(",", ".");
             return parseFloat(limpio);
+        }
+
+        // Extrae solo la hora de un timestamp
+        function extraerHora(fechaStr) {
+            try {
+                const d = new Date(fechaStr);
+                if (isNaN(d.getTime())) {
+                    // Si no es fecha válida, intentar parsear si viene como "HH:mm:ss"
+                    return String(fechaStr).split(" ")[1] || fechaStr;
+                }
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch(e) { return "--:--"; }
         }
 
         function formatDate(date) {
@@ -181,17 +194,18 @@
                 const registrosHoy = data.filter(r => r[0] && formatDate(r[0]) === hoy);
                 if (registrosHoy.length === 0) return;
 
-                const ultimo = registrosHoy[registrosHoy.length - 1];
-                const exp = String(ultimo[3]).trim(), varN = String(ultimo[7]).trim();
+                const ultimoR = registrosHoy[registrosHoy.length - 1];
+                const exp = String(ultimoR[3]).trim(), varN = String(ultimoR[7]).trim();
                 const filtrados = registrosHoy.filter(r => String(r[3]).trim() === exp && String(r[7]).trim() === varN);
 
-                const resumen = {}, ultimos = {};
+                const resumen = {}, ultimos = {}, ultimasHoras = {};
                 filtrados.forEach(r => {
-                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]);
+                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]), hora = extraerHora(r[0]);
                     if (!isNaN(p)) { 
                         if(!resumen[c]) resumen[c] = []; 
                         resumen[c].push(p); 
                         ultimos[c] = p;
+                        ultimasHoras[c] = hora; // Guardamos la hora de la última caja de este calibre
                     }
                 });
 
@@ -204,15 +218,11 @@
                     const pesos = resumen[c];
                     const prom = pesos.reduce((a,b) => a+b, 0) / pesos.length;
                     const ult = ultimos[c], obj = obtenerObjetivo(c);
+                    const h = ultimasHoras[c];
                     
-                    // LÓGICA DE COLORES ±100g
                     let clProm = "txt-ok", clUlt = "txt-ok", icon = "✔";
-                    
                     if (obj) {
-                        // Color para el Promedio
                         if (Math.abs(prom - obj) > 0.10) clProm = "txt-error";
-                        
-                        // Color e Icono para la Última Caja
                         const difUlt = ult - obj;
                         if (difUlt > 0.10) { icon = "▲"; clUlt = "txt-error"; }
                         else if (difUlt < -0.10) { icon = "▼"; clUlt = "txt-error"; }
@@ -231,6 +241,7 @@
                         <div class="col-val">
                             <span class="label-mini">Últ.</span>
                             <span class="val-txt ${clUlt}">${ult.toFixed(2)} ${icon}</span>
+                            <span class="val-hora">${h}</span>
                         </div>
                     </div>`;
                 }).join("");
