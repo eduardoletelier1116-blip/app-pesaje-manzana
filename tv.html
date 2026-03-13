@@ -49,7 +49,8 @@
         .col-val { display: flex; flex-direction: column; }
         .label-mini { font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1; margin-bottom: 1px; }
         .val-txt { font-size: 14px; font-weight: 800; line-height: 1.1; }
-        .val-hora { font-size: 9px; font-weight: 600; color: #94a3b8; margin-top: 1px; }
+        /* HORA ESTILIZADA */
+        .val-hora { font-size: 10px; font-weight: 700; color: #64748b; margin-top: 2px; background: #e2e8f0; border-radius: 3px; padding: 0 3px; width: fit-content; }
         
         .txt-ok { color: #10b981; } 
         .txt-error { color: #dc2626; } 
@@ -106,16 +107,22 @@
             return parseFloat(limpio);
         }
 
-        // Extrae solo la hora de un timestamp
+        // CORRECCIÓN: Extrae estrictamente la HORA y MINUTO
         function extraerHora(fechaStr) {
-            try {
-                const d = new Date(fechaStr);
-                if (isNaN(d.getTime())) {
-                    // Si no es fecha válida, intentar parsear si viene como "HH:mm:ss"
-                    return String(fechaStr).split(" ")[1] || fechaStr;
-                }
-                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            } catch(e) { return "--:--"; }
+            if (!fechaStr) return "--:--";
+            const d = new Date(fechaStr);
+            // Si el objeto Date es válido, sacamos HH:mm
+            if (!isNaN(d.getTime())) {
+                return d.getHours().toString().padStart(2, '0') + ":" + 
+                       d.getMinutes().toString().padStart(2, '0');
+            }
+            // Si Google Sheets envía un string tipo "13/03/2026 17:45:00"
+            const partes = String(fechaStr).split(" ");
+            if (partes.length > 1) {
+                const horaCompleta = partes[1].split(":");
+                return horaCompleta[0] + ":" + horaCompleta[1];
+            }
+            return "--:--";
         }
 
         function formatDate(date) {
@@ -205,7 +212,7 @@
                         if(!resumen[c]) resumen[c] = []; 
                         resumen[c].push(p); 
                         ultimos[c] = p;
-                        ultimasHoras[c] = hora; // Guardamos la hora de la última caja de este calibre
+                        ultimasHoras[c] = hora;
                     }
                 });
 
@@ -241,7 +248,7 @@
                         <div class="col-val">
                             <span class="label-mini">Últ.</span>
                             <span class="val-txt ${clUlt}">${ult.toFixed(2)} ${icon}</span>
-                            <span class="val-hora">${h}</span>
+                            <div class="val-hora">${h}</div>
                         </div>
                     </div>`;
                 }).join("");
