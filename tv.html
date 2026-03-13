@@ -106,12 +106,9 @@
             return parseFloat(limpio);
         }
 
-        // FUNCIÓN MEJORADA PARA COLUMNA B
         function extraerHora(valor) {
             if (!valor) return "--:--";
             let str = String(valor).trim();
-            
-            // Si AppSheet envía HH:mm:ss, cortamos los segundos
             const match = str.match(/(\d{1,2}:\d{2})/);
             return match ? match[1] : str.substring(0, 5);
         }
@@ -148,7 +145,7 @@
             return r ? r.objetivo : null;
         }
 
-        function actualizarGrafico(registros, exp, varN) {
+        function actualizarGrafico(registros) {
             const ctx = document.getElementById("graficoPesosTV").getContext("2d");
             const grupos = {};
             registros.forEach(row => {
@@ -194,23 +191,24 @@
                                String(dActual.getMonth() + 1).padStart(2, '0') + "-" + 
                                String(dActual.getDate()).padStart(2, '0');
 
-                // Filtramos por fecha (Columna A = r[0])
                 const registrosHoy = data.filter(r => r[0] && formatDate(r[0]).includes(hoyStr));
+                
                 if (registrosHoy.length === 0) {
                     document.getElementById("estadoSync").innerText = "Esperando datos...";
                     return;
                 }
 
+                // ACTUALIZACIÓN DE TÍTULO (Exportadora r[3] y Variedad r[7])
                 const ultimoR = registrosHoy[registrosHoy.length - 1];
-                const exp = String(ultimoR[3]).trim(), varN = String(ultimoR[7]).trim();
+                const exp = String(ultimoR[3] || "S/E").trim();
+                const varN = String(ultimoR[7] || "S/V").trim();
+                document.getElementById("tituloExportadora").innerText = `${exp} - ${varN}`;
+
                 const filtrados = registrosHoy.filter(r => String(r[3]).trim() === exp && String(r[7]).trim() === varN);
 
                 const resumen = {}, ultimos = {}, ultimasHoras = {};
                 filtrados.forEach(r => {
-                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]);
-                    // CAMBIO AQUÍ: La hora viene de la Columna B (índice 1)
-                    const hora = extraerHora(r[1]); 
-                    
+                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]), hora = extraerHora(r[1]); 
                     if (!isNaN(p)) { 
                         if(!resumen[c]) resumen[c] = []; 
                         resumen[c].push(p); 
@@ -255,9 +253,12 @@
                 }).join("");
 
                 document.getElementById("infoObjetivosTV").innerHTML = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}: <b>${r.objetivo.toFixed(2)}</b>`).join(" | ");
-                actualizarGrafico(filtrados, exp, varN);
+                actualizarGrafico(filtrados);
                 document.getElementById("estadoSync").innerText = "Act: " + new Date().toLocaleTimeString();
-            } catch (e) { console.error(e); } finally { cargando = false; }
+            } catch (e) { 
+                console.error(e); 
+                document.getElementById("estadoSync").innerText = "Error de conexión";
+            } finally { cargando = false; }
         }
 
         setInterval(refrescarPantalla, 3000);
