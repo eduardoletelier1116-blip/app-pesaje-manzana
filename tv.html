@@ -49,8 +49,6 @@
         .col-val { display: flex; flex-direction: column; }
         .label-mini { font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1; margin-bottom: 1px; }
         .val-txt { font-size: 14px; font-weight: 800; line-height: 1.1; }
-        
-        /* HORA RESALTADA */
         .val-hora { font-size: 10px; font-weight: 800; color: #475569; background: #e2e8f0; padding: 1px 4px; border-radius: 4px; width: fit-content; margin-top: 2px; }
         
         .txt-ok { color: #10b981; } 
@@ -108,30 +106,14 @@
             return parseFloat(limpio);
         }
 
-        // FUNCIÓN MEJORADA: Intenta extraer la hora de cualquier forma
+        // FUNCIÓN MEJORADA PARA COLUMNA B
         function extraerHora(valor) {
             if (!valor) return "--:--";
-            const str = String(valor);
+            let str = String(valor).trim();
             
-            // Intento 1: ¿Es un objeto de fecha?
-            const d = new Date(valor);
-            if (!isNaN(d.getTime()) && str.includes("T")) { // Verifica si tiene formato ISO
-                return d.getHours().toString().padStart(2, '0') + ":" + 
-                       d.getMinutes().toString().padStart(2, '0');
-            }
-
-            // Intento 2: Buscar formato HH:mm:ss o HH:mm con Regex
-            const match = str.match(/(\d{2}:\d{2})/);
-            if (match) return match[1];
-
-            // Intento 3: Si viene como "13/03/2026 17:45"
-            const partes = str.split(" ");
-            if (partes.length > 1) {
-                const hPart = partes[1].split(":");
-                if (hPart.length >= 2) return hPart[0] + ":" + hPart[1];
-            }
-
-            return "--:--";
+            // Si AppSheet envía HH:mm:ss, cortamos los segundos
+            const match = str.match(/(\d{1,2}:\d{2})/);
+            return match ? match[1] : str.substring(0, 5);
         }
 
         function formatDate(date) {
@@ -144,7 +126,6 @@
                 const p = date.split("/");
                 return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
             }
-            // Si viene del Sheets como YYYY-MM-DD...
             if (typeof date === "string" && date.includes("-")) return date.split("T")[0];
             return date;
         }
@@ -208,15 +189,15 @@
                 const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
                 const data = await response.json();
                 
-                // Obtenemos fecha actual para filtrar
                 const dActual = new Date();
                 const hoyStr = dActual.getFullYear() + "-" + 
                                String(dActual.getMonth() + 1).padStart(2, '0') + "-" + 
                                String(dActual.getDate()).padStart(2, '0');
 
+                // Filtramos por fecha (Columna A = r[0])
                 const registrosHoy = data.filter(r => r[0] && formatDate(r[0]).includes(hoyStr));
                 if (registrosHoy.length === 0) {
-                    document.getElementById("estadoSync").innerText = "Sin datos hoy";
+                    document.getElementById("estadoSync").innerText = "Esperando datos...";
                     return;
                 }
 
@@ -226,7 +207,10 @@
 
                 const resumen = {}, ultimos = {}, ultimasHoras = {};
                 filtrados.forEach(r => {
-                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]), hora = extraerHora(r[0]);
+                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]);
+                    // CAMBIO AQUÍ: La hora viene de la Columna B (índice 1)
+                    const hora = extraerHora(r[1]); 
+                    
                     if (!isNaN(p)) { 
                         if(!resumen[c]) resumen[c] = []; 
                         resumen[c].push(p); 
