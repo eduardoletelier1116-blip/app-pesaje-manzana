@@ -19,11 +19,16 @@
         .chart-container { position: relative; flex: 1; min-height: 0; }
         
         .sidebar { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-        .mini-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .mini-kpis { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px; }
         .kpi { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 6px; text-align: center; }
-        .kpi-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+        .kpi-label { font-size: 10px; color: #6b7280; text-transform: uppercase; font-weight: 700; }
         .kpi-value { font-size: 20px; font-weight: 800; color: #1e3c72; }
         
+        /* ESTILO ESPECIAL PARA EL RELOJ */
+        .kpi-reloj { background: #1e3c72; border: 1px solid #1e3c72; }
+        .kpi-reloj .kpi-label { color: #cbd5e1; }
+        .kpi-reloj .kpi-value { color: #ffffff; font-family: 'Courier New', Courier, monospace; }
+
         .objetivos-box { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 6px; }
         .objetivos-title { font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 2px; }
         .objetivos-texto { font-size: 11px; color: #b45309; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -78,8 +83,14 @@
 
         <div class="sidebar">
             <div class="mini-kpis">
-                <div class="kpi"><div class="kpi-label">Muestras</div><div class="kpi-value" id="kpiCajas">0</div></div>
-                <div class="kpi"><div class="kpi-label">Calibres</div><div class="kpi-value" id="kpiCalibres">0</div></div>
+                <div class="kpi">
+                    <div class="kpi-label">Muestras Totales</div>
+                    <div class="kpi-value" id="kpiCajas">0</div>
+                </div>
+                <div class="kpi kpi-reloj">
+                    <div class="kpi-label">Hora Actual</div>
+                    <div class="kpi-value" id="relojActual">00:00:00</div>
+                </div>
             </div>
 
             <div class="objetivos-box">
@@ -99,6 +110,16 @@
         let graficoTV = null;
         let cargando = false;
         let reglasObjetivo = [];
+
+        // Función para el reloj digital
+        function actualizarReloj() {
+            const ahora = new Date();
+            const h = ahora.getHours().toString().padStart(2, '0');
+            const m = ahora.getMinutes().toString().padStart(2, '0');
+            const s = ahora.getSeconds().toString().padStart(2, '0');
+            document.getElementById("relojActual").innerText = `${h}:${m}:${s}`;
+        }
+        setInterval(actualizarReloj, 1000); // Se actualiza cada segundo
 
         function normalizarNumero(valor) {
             if (valor === null || valor === undefined || valor === "") return NaN;
@@ -198,7 +219,6 @@
                     return;
                 }
 
-                // ACTUALIZACIÓN DE TÍTULO (Exportadora r[3] y Variedad r[7])
                 const ultimoR = registrosHoy[registrosHoy.length - 1];
                 const exp = String(ultimoR[3] || "S/E").trim();
                 const varN = String(ultimoR[7] || "S/V").trim();
@@ -219,7 +239,6 @@
 
                 const sorted = Object.keys(resumen).sort((a, b) => parseInt(a) - parseInt(b));
                 document.getElementById("kpiCajas").innerText = filtrados.length;
-                document.getElementById("kpiCalibres").innerText = sorted.length;
                 document.getElementById("fechaHoy").innerText = dActual.toLocaleDateString("es-CL");
 
                 document.getElementById("resumenCalibres").innerHTML = sorted.map(c => {
@@ -263,6 +282,7 @@
 
         setInterval(refrescarPantalla, 3000);
         window.onload = refrescarPantalla;
+        actualizarReloj(); // Iniciar reloj de inmediato
     </script>
 </body>
 </html>
