@@ -24,7 +24,6 @@
         .kpi-label { font-size: 10px; color: #6b7280; text-transform: uppercase; font-weight: 700; }
         .kpi-value { font-size: 20px; font-weight: 800; color: #1e3c72; }
         
-        /* ESTILO ESPECIAL PARA EL RELOJ */
         .kpi-reloj { background: #1e3c72; border: 1px solid #1e3c72; }
         .kpi-reloj .kpi-label { color: #cbd5e1; }
         .kpi-reloj .kpi-value { color: #ffffff; font-family: 'Courier New', Courier, monospace; }
@@ -110,8 +109,8 @@
         let graficoTV = null;
         let cargando = false;
         let reglasObjetivo = [];
+        let datosFiltradosParaGrafico = []; // Variable auxiliar para el alcance del tooltip
 
-        // Función para el reloj digital
         function actualizarReloj() {
             const ahora = new Date();
             const h = ahora.getHours().toString().padStart(2, '0');
@@ -119,7 +118,7 @@
             const s = ahora.getSeconds().toString().padStart(2, '0');
             document.getElementById("relojActual").innerText = `${h}:${m}:${s}`;
         }
-        setInterval(actualizarReloj, 1000); // Se actualiza cada segundo
+        setInterval(actualizarReloj, 1000);
 
         function normalizarNumero(valor) {
             if (valor === null || valor === undefined || valor === "") return NaN;
@@ -167,13 +166,14 @@
         }
 
         function actualizarGrafico(registros) {
+            datosFiltradosParaGrafico = registros; 
             const ctx = document.getElementById("graficoPesosTV").getContext("2d");
             const grupos = {};
             registros.forEach(row => {
                 const cal = String(row[5]).trim(), peso = normalizarNumero(row[9]);
                 if (!cal || isNaN(peso)) return;
                 if (!grupos[cal]) grupos[cal] = [];
-                grupos[cal].push(peso);
+                grupos[cal].push({peso: peso, hora: extraerHora(row[1])});
             });
             const calibresSorted = Object.keys(grupos).sort((a,b)=>parseInt(a)-parseInt(b));
             const maxC = Math.max(...Object.values(grupos).map(a => a.length), 0);
@@ -182,7 +182,9 @@
                 const color = `hsl(${i * 60}, 70%, 50%)`;
                 const obj = obtenerObjetivo(cal);
                 datasets.push({
-                    label: `C${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color,
+                    label: `C${cal}`, 
+                    data: grupos[cal].map(g => g.peso), 
+                    borderColor: color, backgroundColor: color,
                     tension: 0.3, pointRadius: 4, borderWidth: 2, fill: false
                 });
                 if (obj) {
@@ -194,8 +196,25 @@
             });
             if (graficoTV) graficoTV.destroy();
             graficoTV = new Chart(ctx, {
-                type: 'line', data: { labels: Array.from({length: maxC}, (_, i)=>`C${i+1}`), datasets },
-                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, filter: (item) => !item.text.includes('Obj') } } } }
+                type: 'line', 
+                data: { labels: Array.from({length: maxC}, (_, i)=>`Reg ${i+1}`), datasets },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, animation: false, 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, filter: (item) => !item.text.includes('Obj') } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const cal = context.dataset.label.replace("C", "");
+                                    const index = context.dataIndex;
+                                    const registrosCalibre = grupos[cal];
+                                    const hora = registrosCalibre[index] ? registrosCalibre[index].hora : "--:--";
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} | Hora: ${hora}`;
+                                }
+                            }
+                        }
+                    } 
+                }
             });
         }
 
@@ -208,9 +227,7 @@
                 const data = await response.json();
                 
                 const dActual = new Date();
-                const hoyStr = dActual.getFullYear() + "-" + 
-                               String(dActual.getMonth() + 1).padStart(2, '0') + "-" + 
-                               String(dActual.getDate()).padStart(2, '0');
+                const hoyStr = dActual.getFullYear() + "-" + String(dActual.getMonth() + 1).padStart(2, '0') + "-" + String(dActual.getDate()).padStart(2, '0');
 
                 const registrosHoy = data.filter(r => r[0] && formatDate(r[0]).includes(hoyStr));
                 
@@ -252,7 +269,6 @@
                         if (difUlt > 0.10) { icon = "▲"; clUlt = "txt-error"; }
                         else if (difUlt < -0.10) { icon = "▼"; clUlt = "txt-error"; }
                     }
-
                     return `
                     <div class="fila-tv">
                         <div class="col-cal">
@@ -282,7 +298,7 @@
 
         setInterval(refrescarPantalla, 3000);
         window.onload = refrescarPantalla;
-        actualizarReloj(); // Iniciar reloj de inmediato
+        actualizarReloj();
     </script>
 </body>
 </html>
