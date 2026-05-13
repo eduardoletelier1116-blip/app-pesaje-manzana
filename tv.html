@@ -5,64 +5,52 @@
     <title>Modo TV - Registro de Pesos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; overflow: hidden; height: 100vh; }
-        header { background: #1e3c72; color: white; padding: 8px 24px; text-align: center; font-size: 20px; font-weight: 600; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 30px; }
-        .codigo-empresa { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 11px; opacity: 0.8; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #ebedf0; color: #1f2937; overflow: hidden; height: 100vh; }
+        header { background: #1e3c72; color: white; padding: 12px 24px; text-align: center; font-size: 22px; font-weight: 700; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .logo { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); height: 35px; }
+        .codigo-empresa { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: bold; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; }
         
-        .main { display: grid; grid-template-columns: 1.8fr 1.4fr; gap: 10px; padding: 10px; height: calc(100vh - 46px); box-sizing: border-box; }
-        .panel { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 10px; display: flex; flex-direction: column; min-height: 0; }
+        .main { display: grid; grid-template-columns: 1.8fr 1.4fr; gap: 15px; padding: 15px; height: calc(100vh - 65px); box-sizing: border-box; }
+        .panel { background: white; border-radius: 16px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05); padding: 15px; display: flex; flex-direction: column; min-height: 0; border: 1px solid #e5e7eb; }
         
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .chart-title { font-size: 18px; font-weight: 700; color: #1e3c72; }
-        .chart-subinfo { font-size: 11px; color: #6b7280; text-align: right; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .chart-title { font-size: 20px; font-weight: 800; color: #1e3c72; }
+        .chart-subinfo { font-size: 12px; color: #6b7280; text-align: right; font-weight: 600; }
         .chart-container { position: relative; flex: 1; min-height: 0; }
         
-        .sidebar { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-        .mini-kpis { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px; }
-        .kpi { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 6px; text-align: center; }
-        .kpi-label { font-size: 10px; color: #6b7280; text-transform: uppercase; font-weight: 700; }
-        .kpi-value { font-size: 20px; font-weight: 800; color: #1e3c72; }
+        .sidebar { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+        .mini-kpis { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; }
+        .kpi { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; }
+        .kpi-value { font-size: 24px; font-weight: 800; color: #1e3c72; }
         
-        .kpi-reloj { background: #1e3c72; border: 1px solid #1e3c72; }
-        .kpi-reloj .kpi-label { color: #cbd5e1; }
+        .kpi-reloj { background: #1e3c72; border: none; }
+        .kpi-reloj .kpi-label { color: #94a3b8; }
         .kpi-reloj .kpi-value { color: #ffffff; font-family: 'Courier New', Courier, monospace; }
 
-        .objetivos-box { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 6px; }
-        .objetivos-title { font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 2px; }
-        .objetivos-texto { font-size: 11px; color: #b45309; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .objetivos-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 10px; }
+        .objetivos-title { font-size: 11px; font-weight: 800; color: #92400e; margin-bottom: 4px; text-transform: uppercase; }
+        .objetivos-texto { font-size: 13px; color: #92400e; font-weight: 700; }
 
-        .resumen-box { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .resumen-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #f4f6f9; }
+        .resumen-box { flex: 1; }
+        .resumen-title { font-size: 15px; font-weight: 800; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; color: #1e3c72; }
         
-        .resumen-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; overflow-y: hidden; }
+        .resumen-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow-y: hidden; }
         
-        .fila-tv { 
-            display: grid; 
-            grid-template-columns: 0.7fr 1fr 1.2fr; 
-            align-items: center; 
-            border: 1px solid #e5e7eb; 
-            border-radius: 6px; 
-            padding: 4px 6px; 
-            background: #fafafa; 
-        }
-        .col-cal { display: flex; flex-direction: column; justify-content: center; }
-        .txt-cal-num { font-size: 16px; font-weight: 800; color: #1e3c72; line-height: 1; }
-        .txt-obj-ref { font-size: 9px; color: #f59e0b; font-weight: 700; }
-
-        .col-val { display: flex; flex-direction: column; }
-        .label-mini { font-size: 8px; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1; margin-bottom: 1px; }
-        .val-txt { font-size: 14px; font-weight: 800; line-height: 1.1; }
-        .val-hora { font-size: 10px; font-weight: 800; color: #475569; background: #e2e8f0; padding: 1px 4px; border-radius: 4px; width: fit-content; margin-top: 2px; }
+        .fila-tv { display: grid; grid-template-columns: 0.7fr 1fr 1.2fr; align-items: center; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; background: #ffffff; }
+        .txt-cal-num { font-size: 18px; font-weight: 900; color: #1e3c72; }
+        .txt-obj-ref { font-size: 10px; color: #d97706; font-weight: 800; }
+        .val-txt { font-size: 16px; font-weight: 800; }
+        .val-hora { font-size: 11px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; width: fit-content; margin-top: 2px; }
         
-        .txt-ok { color: #10b981; } 
+        .txt-ok { color: #059669; } 
         .txt-error { color: #dc2626; } 
     </style>
 </head>
 <body>
     <header>
-        <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/sinfondo.png" class="logo">
-        MONITOREO DE PESOS TIEMPO REAL
+        <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo">
+        MONITOREO DE PESOS
         <div class="codigo-empresa">R02 POE 29</div>
     </header>
 
@@ -83,11 +71,11 @@
         <div class="sidebar">
             <div class="mini-kpis">
                 <div class="kpi">
-                    <div class="kpi-label">Muestras Totales</div>
+                    <div class="kpi-label">Muestras</div>
                     <div class="kpi-value" id="kpiCajas">0</div>
                 </div>
                 <div class="kpi kpi-reloj">
-                    <div class="kpi-label">Hora Actual</div>
+                    <div class="kpi-label">Hora</div>
                     <div class="kpi-value" id="relojActual">00:00:00</div>
                 </div>
             </div>
@@ -98,7 +86,7 @@
             </div>
 
             <div class="panel resumen-box">
-                <div class="resumen-title">Calibres: Obj | Prom | Últ</div>
+                <div class="resumen-title">Detalle de Calibres</div>
                 <div class="resumen-lista" id="resumenCalibres"></div>
             </div>
         </div>
@@ -112,38 +100,29 @@
 
         function actualizarReloj() {
             const ahora = new Date();
-            const h = ahora.getHours().toString().padStart(2, '0');
-            const m = ahora.getMinutes().toString().padStart(2, '0');
-            const s = ahora.getSeconds().toString().padStart(2, '0');
-            document.getElementById("relojActual").innerText = `${h}:${m}:${s}`;
+            document.getElementById("relojActual").innerText = ahora.toLocaleTimeString('es-CL', {hour12: false});
         }
         setInterval(actualizarReloj, 1000);
 
         function normalizarNumero(valor) {
             if (valor === null || valor === undefined || valor === "") return NaN;
-            const limpio = String(valor).trim().replace(",", ".");
-            return parseFloat(limpio);
+            return parseFloat(String(valor).trim().replace(",", "."));
         }
 
         function extraerHora(valor) {
             if (!valor) return "--:--";
-            let str = String(valor).trim();
-            const match = str.match(/(\d{1,2}:\d{2})/);
-            return match ? match[1] : str.substring(0, 5);
+            const match = String(valor).trim().match(/(\d{1,2}:\d{2})/);
+            return match ? match[1] : String(valor).substring(0, 5);
         }
 
         function formatDate(date) {
             if (!date) return "";
-            if (date instanceof Date) {
-                const d = String(date.getDate()).padStart(2, '0'), m = String(date.getMonth() + 1).padStart(2, '0'), y = date.getFullYear();
-                return `${y}-${m}-${d}`;
-            }
+            if (date instanceof Date) return date.toISOString().split('T')[0];
             if (typeof date === "string" && date.includes("/")) {
                 const p = date.split("/");
                 return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
             }
-            if (typeof date === "string" && date.includes("-")) return date.split("T")[0];
-            return date;
+            return date.split("T")[0];
         }
 
         async function cargarObjetivos() {
@@ -180,10 +159,8 @@
                 const color = `hsl(${i * 60}, 70%, 50%)`;
                 const obj = obtenerObjetivo(cal);
                 datasets.push({
-                    label: `C${cal}`, 
-                    data: grupos[cal].map(g => g.peso), 
-                    borderColor: color, backgroundColor: color,
-                    tension: 0.3, pointRadius: 4, borderWidth: 2, fill: false
+                    label: `C${cal}`, data: grupos[cal].map(g => g.peso), 
+                    borderColor: color, backgroundColor: color, tension: 0.3, pointRadius: 4, borderWidth: 2, fill: false
                 });
                 if (obj) {
                     datasets.push({
@@ -199,23 +176,16 @@
                 options: { 
                     responsive: true, maintainAspectRatio: false, animation: false, 
                     plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, filter: (item) => !item.text.includes('Obj') } },
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, filter: (item) => !item.text.includes('Obj') } },
                         tooltip: {
-                            backgroundColor: 'rgba(30, 60, 114, 0.95)',
-                            titleFont: { size: 14, weight: 'bold' },
-                            bodyFont: { size: 13 },
-                            padding: 12,
-                            cornerRadius: 8,
-                            displayColors: false,
-                            borderColor: '#ffffff',
-                            borderWidth: 1,
+                            backgroundColor: '#1e3c72', titleFont: { size: 16, weight: 'bold' }, bodyFont: { size: 14 },
+                            padding: 15, cornerRadius: 8, displayColors: false, borderColor: '#f59e0b', borderWidth: 2,
                             callbacks: {
                                 label: function(context) {
                                     if (context.dataset.label.includes("Obj")) return null;
                                     const cal = context.dataset.label.replace("C", "");
-                                    const index = context.dataIndex;
-                                    const hora = grupos[cal][index] ? grupos[cal][index].hora : "--:--";
-                                    return `Calibre ${cal}: ${context.parsed.y.toFixed(2)} | Hora: ${hora}`;
+                                    const hora = grupos[cal][context.dataIndex]?.hora || "--:--";
+                                    return `CALIBRE ${cal}: ${context.parsed.y.toFixed(2)} KG | HORA: ${hora}`;
                                 }
                             }
                         }
@@ -231,75 +201,41 @@
                 await cargarObjetivos();
                 const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
                 const data = await response.json();
-                
                 const dActual = new Date();
-                const hoyStr = dActual.getFullYear() + "-" + String(dActual.getMonth() + 1).padStart(2, '0') + "-" + String(dActual.getDate()).padStart(2, '0');
-
+                const hoyStr = dActual.toISOString().split('T')[0];
                 const registrosHoy = data.filter(r => r[0] && formatDate(r[0]).includes(hoyStr));
                 
-                if (registrosHoy.length === 0) {
-                    document.getElementById("estadoSync").innerText = "Esperando datos...";
-                    return;
-                }
+                if (registrosHoy.length === 0) { document.getElementById("estadoSync").innerText = "Esperando..."; return; }
 
                 const ultimoR = registrosHoy[registrosHoy.length - 1];
                 const exp = String(ultimoR[3] || "S/E").trim();
                 const varN = String(ultimoR[7] || "S/V").trim();
                 document.getElementById("tituloExportadora").innerText = `${exp} - ${varN}`;
-
                 const filtrados = registrosHoy.filter(r => String(r[3]).trim() === exp && String(r[7]).trim() === varN);
 
                 const resumen = {}, ultimos = {}, ultimasHoras = {};
                 filtrados.forEach(r => {
-                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]), hora = extraerHora(r[1]); 
+                    const c = String(r[5]).trim(), p = normalizarNumero(r[9]), h = extraerHora(r[1]);
                     if (!isNaN(p)) { 
                         if(!resumen[c]) resumen[c] = []; 
-                        resumen[c].push(p); 
-                        ultimos[c] = p;
-                        ultimasHoras[c] = hora;
+                        resumen[c].push(p); ultimos[c] = p; ultimasHoras[c] = h;
                     }
                 });
 
-                const sorted = Object.keys(resumen).sort((a, b) => parseInt(a) - parseInt(b));
                 document.getElementById("kpiCajas").innerText = filtrados.length;
                 document.getElementById("fechaHoy").innerText = dActual.toLocaleDateString("es-CL");
-
-                document.getElementById("resumenCalibres").innerHTML = sorted.map(c => {
+                document.getElementById("resumenCalibres").innerHTML = Object.keys(resumen).sort((a, b) => parseInt(a) - parseInt(b)).map(c => {
                     const prom = resumen[c].reduce((a,b) => a+b, 0) / resumen[c].length;
                     const ult = ultimos[c], obj = obtenerObjetivo(c), h = ultimasHoras[c];
-                    
-                    let clProm = "txt-ok", clUlt = "txt-ok", icon = "✔";
-                    if (obj) {
-                        if (Math.abs(prom - obj) > 0.10) clProm = "txt-error";
-                        const difUlt = ult - obj;
-                        if (difUlt > 0.10) { icon = "▲"; clUlt = "txt-error"; }
-                        else if (difUlt < -0.10) { icon = "▼"; clUlt = "txt-error"; }
-                    }
-                    return `
-                    <div class="fila-tv">
-                        <div class="col-cal">
-                            <span class="txt-cal-num">C${c}</span>
-                            <span class="txt-obj-ref">${obj ? obj.toFixed(2) : '--'}</span>
-                        </div>
-                        <div class="col-val">
-                            <span class="label-mini">Prom.</span>
-                            <span class="val-txt ${clProm}">${prom.toFixed(2)}</span>
-                        </div>
-                        <div class="col-val">
-                            <span class="label-mini">Últ.</span>
-                            <span class="val-txt ${clUlt}">${ult.toFixed(2)} ${icon}</span>
-                            <div class="val-hora">${h}</div>
-                        </div>
-                    </div>`;
+                    let clP = Math.abs(prom - (obj||0)) > 0.10 ? "txt-error" : "txt-ok";
+                    let clU = (ult - (obj||0)) > 0.10 || (ult - (obj||0)) < -0.10 ? "txt-error" : "txt-ok";
+                    return `<div class="fila-tv"><div class="col-cal"><span class="txt-cal-num">C${c}</span><span class="txt-obj-ref">${obj ? obj.toFixed(2) : '--'}</span></div><div class="col-val"><span class="label-mini">Prom.</span><span class="val-txt ${clP}">${prom.toFixed(2)}</span></div><div class="col-val"><span class="label-mini">Últ.</span><span class="val-txt ${clU}">${ult.toFixed(2)}</span><div class="val-hora">${h}</div></div></div>`;
                 }).join("");
 
                 document.getElementById("infoObjetivosTV").innerHTML = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}: <b>${r.objetivo.toFixed(2)}</b>`).join(" | ");
                 actualizarGrafico(filtrados);
                 document.getElementById("estadoSync").innerText = "Act: " + new Date().toLocaleTimeString();
-            } catch (e) { 
-                console.error(e); 
-                document.getElementById("estadoSync").innerText = "Error de conexión";
-            } finally { cargando = false; }
+            } catch (e) { console.error(e); } finally { cargando = false; }
         }
 
         setInterval(refrescarPantalla, 3000);
