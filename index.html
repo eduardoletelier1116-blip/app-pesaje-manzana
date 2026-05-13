@@ -110,7 +110,8 @@
             outline: 2px solid #dfe6e9; 
         }
 
-        #peso {
+        #peso,
+        #editPeso {
             font-size: 24px;
             font-weight: bold;
             color: var(--primary);
@@ -255,6 +256,50 @@
             font-weight: bold;
         }
 
+        .acciones-registro {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .btn-accion {
+            width: auto;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            letter-spacing: 0;
+            margin: 0;
+        }
+
+        .btn-editar {
+            background: #2a5298;
+        }
+
+        .btn-eliminar {
+            background: #e74c3c;
+        }
+
+        .btn-secundario {
+            background: #eef2f7;
+            color: var(--primary);
+        }
+
+        .btn-guardar-edicion {
+            background: #4caf50;
+        }
+
+        .edit-alerta {
+            background: #eef2f7;
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         @media (max-width: 480px) {
             .container { 
                 padding: 0 12px; 
@@ -305,7 +350,8 @@
                 padding-right: 34px;
             }
 
-            #peso {
+            #peso,
+            #editPeso {
                 height: 54px;
                 min-height: 54px;
                 font-size: 24px;
@@ -341,6 +387,17 @@
 
             .chart-container {
                 height: 260px;
+            }
+
+            .acciones-registro {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .btn-accion {
+                height: 26px;
+                padding: 0 6px;
+                font-size: 8px;
             }
         }
     </style>
@@ -470,6 +527,92 @@
             <p id="msg" style="text-align:center; font-weight:bold; color:green;"></p>
         </div>
 
+        <div class="card hidden" id="editarRegistroCard">
+            <label>Editar registro del día</label>
+
+            <div class="edit-alerta">
+                Solo se permite modificar registros del día actual.
+            </div>
+
+            <input type="hidden" id="editFila">
+            <input type="hidden" id="editFechaOriginal">
+            <input type="hidden" id="editHoraOriginal">
+            <input type="hidden" id="editOperadorOriginal">
+
+            <div class="form-grid">
+                <div>
+                    <label>Operador</label>
+                    <input type="text" id="editOperador" readonly>
+                </div>
+
+                <div>
+                    <label>Exportadora</label>
+                    <select id="editExportadora">
+                        <option value="">Detectar...</option>
+                        <option>Fruclem</option>
+                        <option>SK Gyan</option>
+                        <option>JHB</option>
+                        <option>Talamaya</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <label>Variedad</label>
+                    <select id="editVariedad">
+                        <option value="">Variedad</option>
+                        <option>Royal Gala</option>
+                        <option>Red Delicious</option>
+                        <option>Granny</option>
+                        <option>Fuji</option>
+                        <option>Pink Lady</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Salida</label>
+                    <select id="editSalida"></select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <label>Categoría</label>
+                    <select id="editCategoria">
+                        <option value="Premium">Premium</option>
+                        <option value="Extra">Extra</option>
+                        <option value="Fancy">Fancy</option>
+                        <option value="Choice">Choice</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Calibre</label>
+                    <input type="text" id="editCalibre" placeholder="Ej: 100">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <label>Lote</label>
+                    <input type="text" id="editLote" placeholder="Lote N°">
+                </div>
+
+                <div>
+                    <label>Peso (kg)</label>
+                    <input type="number" step="0.01" id="editPeso" placeholder="0.0">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <button type="button" class="btn-guardar-edicion" id="btnGuardarEdicion" onclick="guardarEdicionRegistro()">Guardar cambios</button>
+                <button type="button" class="btn-secundario" onclick="cancelarEdicion()">Cancelar</button>
+            </div>
+
+            <p id="msgEdit" style="text-align:center; font-weight:bold; color:green;"></p>
+        </div>
+
         <div class="card hidden" id="graficoCard">
             <label id="tituloGrafico">Seguimiento de Calibres</label>
 
@@ -533,6 +676,7 @@
                             <th>Cal</th>
                             <th>Lote</th>
                             <th>Peso</th>
+                            <th>Acc.</th>
                         </tr>
                     </thead>
                     <tbody id="tabla"></tbody>
@@ -550,9 +694,10 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjq7iM3-S1q9ZSJFiuYf3ZIPT5oDHl5eAOnUJCmycik_-5Oml72qx27_hhNVYlJNxl/exec";
         const salidaSelect = document.getElementById("salida");
         const filtroSalidaSelect = document.getElementById("filtroHistorialSalida");
+        const editSalidaSelect = document.getElementById("editSalida");
         const estadoSync = document.getElementById("estadoSync");
 
         let grafico = null;
@@ -560,6 +705,7 @@
         let reglasObjetivo = [];
         
         let registrosDiaFull = [];
+        let registrosPaginaActual = [];
         let paginaActual = 1;
         const filasPorPagina = 5;
 
@@ -573,6 +719,11 @@
             optionFiltro.value = i;
             optionFiltro.text = i;
             filtroSalidaSelect.appendChild(optionFiltro);
+
+            let optionEdit = document.createElement("option");
+            optionEdit.value = i;
+            optionEdit.text = i;
+            editSalidaSelect.appendChild(optionEdit);
         }
 
         function toggleObjetivos() {
@@ -600,7 +751,7 @@
             return registros.filter(row => {
                 if (!row || row.length < 10) return false;
 
-                let fReg = row[0];
+                let fReg = String(row[0] || "");
 
                 if (fReg.includes("/")) {
                     const p = fReg.split("/");
@@ -678,17 +829,18 @@
             const fin = inicio + filasPorPagina;
             
             const filtrados = [...registrosFiltrados].reverse().slice(inicio, fin);
+            registrosPaginaActual = filtrados;
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" style="text-align:center; color: var(--text-label); padding:18px;">
+                        <td colspan="8" style="text-align:center; color: var(--text-label); padding:18px;">
                             Sin registros para este filtro
                         </td>
                     </tr>
                 `;
             } else {
-                filtrados.forEach(row => {
+                filtrados.forEach((row, index) => {
                     tbody.innerHTML += `<tr>
                         <td>${row[1]}</td>
                         <td>${row[2]}</td>
@@ -697,6 +849,12 @@
                         <td>${row[5]}</td>
                         <td>${row[8]}</td>
                         <td><b>${row[9]}</b></td>
+                        <td>
+                            <div class="acciones-registro">
+                                <button type="button" class="btn-accion btn-editar" onclick="iniciarEdicion(${index})">Editar</button>
+                                <button type="button" class="btn-accion btn-eliminar" onclick="eliminarRegistroDia(${index})">Eliminar</button>
+                            </div>
+                        </td>
                     </tr>`;
                 });
             }
@@ -713,6 +871,138 @@
         function cambiarPagina(dir) {
             paginaActual += dir;
             actualizarTabla();
+        }
+
+        function seleccionarValorSelect(idSelect, valor) {
+            const select = document.getElementById(idSelect);
+            const valorTexto = String(valor || "").trim();
+
+            if (!valorTexto) {
+                select.value = "";
+                return;
+            }
+
+            const existe = Array.from(select.options).some(option => option.value === valorTexto || option.text === valorTexto);
+
+            if (!existe) {
+                const option = document.createElement("option");
+                option.value = valorTexto;
+                option.text = valorTexto;
+                select.appendChild(option);
+            }
+
+            select.value = valorTexto;
+        }
+
+        function iniciarEdicion(index) {
+            const row = registrosPaginaActual[index];
+            if (!row) return;
+
+            document.getElementById("editFila").value = row[10];
+            document.getElementById("editFechaOriginal").value = row[0];
+            document.getElementById("editHoraOriginal").value = row[1];
+            document.getElementById("editOperadorOriginal").value = row[2];
+
+            document.getElementById("editOperador").value = row[2] || "";
+            seleccionarValorSelect("editExportadora", row[3]);
+            seleccionarValorSelect("editSalida", row[4]);
+            document.getElementById("editCalibre").value = row[5] || "";
+            seleccionarValorSelect("editCategoria", row[6]);
+            seleccionarValorSelect("editVariedad", row[7]);
+            document.getElementById("editLote").value = row[8] || "";
+            document.getElementById("editPeso").value = row[9] || "";
+
+            document.getElementById("msgEdit").innerText = "";
+            document.getElementById("editarRegistroCard").classList.remove("hidden");
+            document.getElementById("editarRegistroCard").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function cancelarEdicion() {
+            document.getElementById("editarRegistroCard").classList.add("hidden");
+            document.getElementById("msgEdit").innerText = "";
+        }
+
+        function guardarEdicionRegistro() {
+            const btn = document.getElementById("btnGuardarEdicion");
+            const msgEdit = document.getElementById("msgEdit");
+
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+            msgEdit.innerText = "";
+
+            const data = {
+                accion: "editarRegistro",
+                fila: document.getElementById("editFila").value,
+                fechaOriginal: document.getElementById("editFechaOriginal").value,
+                horaOriginal: document.getElementById("editHoraOriginal").value,
+                operadorOriginal: document.getElementById("editOperadorOriginal").value,
+                exportadora: document.getElementById("editExportadora").value,
+                salida: document.getElementById("editSalida").value,
+                calibre: document.getElementById("editCalibre").value,
+                categoria: document.getElementById("editCategoria").value,
+                variedad: document.getElementById("editVariedad").value,
+                lote: document.getElementById("editLote").value,
+                peso: document.getElementById("editPeso").value
+            };
+
+            fetch(SCRIPT_URL, { 
+                method: "POST", 
+                body: new URLSearchParams(data) 
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (!res || res.status !== "success") {
+                    throw new Error(res.message || "No se pudo editar el registro.");
+                }
+
+                msgEdit.innerText = "Registro actualizado correctamente.";
+                
+                setTimeout(() => {
+                    cancelarEdicion();
+                    cargarRegistros();
+                }, 700);
+            })
+            .catch(error => {
+                alert(error.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Guardar cambios";
+            });
+        }
+
+        function eliminarRegistroDia(index) {
+            const row = registrosPaginaActual[index];
+            if (!row) return;
+
+            const confirmar = confirm(`¿Seguro que deseas eliminar este registro?\n\nHora: ${row[1]}\nSalida: ${row[4]}\nCalibre: ${row[5]}\nPeso: ${row[9]}`);
+
+            if (!confirmar) return;
+
+            const data = {
+                accion: "eliminarRegistro",
+                fila: row[10],
+                fechaOriginal: row[0],
+                horaOriginal: row[1],
+                operadorOriginal: row[2]
+            };
+
+            fetch(SCRIPT_URL, { 
+                method: "POST", 
+                body: new URLSearchParams(data) 
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (!res || res.status !== "success") {
+                    throw new Error(res.message || "No se pudo eliminar el registro.");
+                }
+
+                cancelarEdicion();
+                cargarRegistros();
+            })
+            .catch(error => {
+                alert(error.message);
+            });
         }
 
         function guardarObjetivosEnServidor() {
@@ -907,11 +1197,19 @@
                 cargarObjetivosDesdeServidor()
             ])
             .then(([data]) => {
+                if (!Array.isArray(data)) {
+                    throw new Error(data.message || "No se pudieron cargar los registros.");
+                }
+
                 registrosDiaFull = filtrarRegistrosPorDia(data);
                 actualizarTabla();
                 actualizarGrafico(registrosDiaFull);
                 estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
                 renderTablaObjetivos();
+            })
+            .catch(error => {
+                console.error(error);
+                estadoSync.innerText = "Error de sincronización";
             })
             .finally(() => { 
                 cargando = false; 
