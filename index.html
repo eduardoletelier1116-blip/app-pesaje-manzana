@@ -9,7 +9,7 @@
         :root {
             --bg-app: #f4f7f9;
             --card-bg: #ffffff;
-            --primary: #003366; /* Azul Fresh-Pak */
+            --primary: #003366;
             --text-label: #8e9aaf;
             --text-main: #2d3436;
             --input-bg: #f1f3f6;
@@ -17,22 +17,9 @@
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: var(--bg-app); 
-            margin: 0; 
-            color: var(--text-main);
-            padding-bottom: 40px;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-app); margin: 0; color: var(--text-main); padding-bottom: 40px; }
 
-        header { 
-            text-align: center; 
-            padding: 30px 20px; 
-            background: white; 
-            border-bottom-left-radius: var(--border-radius);
-            border-bottom-right-radius: var(--border-radius);
-            margin-bottom: 20px;
-        }
+        header { text-align: center; padding: 30px 20px; background: white; border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); margin-bottom: 20px; }
 
         .logo { height: 45px; margin-bottom: 10px; }
         header h1 { font-size: 18px; margin: 0; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
@@ -40,72 +27,22 @@
 
         .container { max-width: 500px; margin: auto; padding: 0 15px; }
 
-        .card { 
-            background: var(--card-bg); 
-            padding: 25px; 
-            border-radius: var(--border-radius); 
-            box-shadow: var(--shadow); 
-            margin-bottom: 20px; 
-        }
+        .card { background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; }
 
-        label { 
-            display: block; 
-            font-size: 11px; 
-            font-weight: 800; 
-            color: var(--text-label); 
-            margin-bottom: 8px; 
-            text-transform: uppercase; 
-            padding-left: 5px;
-        }
+        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-label); margin-bottom: 8px; text-transform: uppercase; padding-left: 5px; }
 
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            border: none; 
-            background: var(--input-bg); 
-            border-radius: 15px; 
-            box-sizing: border-box; 
-            font-size: 15px;
-            color: var(--text-main);
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-
+        /* Ajuste de inputs para proporcionalidad */
+        input, select { width: 100%; padding: 12px; border: none; background: var(--input-bg); border-radius: 12px; box-sizing: border-box; font-size: 14px; color: var(--text-main); margin-bottom: 15px; font-weight: 500; }
         input:focus { outline: 2px solid #dfe6e9; }
 
-        button { 
-            width: 100%; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 15px; 
-            font-weight: 700; 
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+        /* Contenedor flexible para los cuadros */
+        .grid-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        .collapsible-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        .collapsible-content { 
-            max-height: 0; 
-            overflow: hidden; 
-            transition: max-height 0.3s ease-out; 
-            margin-top: 0;
-        }
-
+        .collapsible-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: var(--primary); font-weight: 700; font-size: 13px; text-transform: uppercase; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; margin-top: 0; }
         .collapsible-content.open { max-height: 1000px; margin-top: 20px; }
 
         .table-container { overflow-x: auto; min-height: 200px; }
@@ -113,34 +50,15 @@
         th { text-align: left; color: var(--text-label); padding: 10px; border-bottom: 1px solid #eee; text-transform: uppercase; }
         td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; white-space: nowrap; }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .btn-nav {
-            background: var(--input-bg);
-            color: var(--primary);
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; }
+        .btn-nav { background: var(--input-bg); color: var(--primary); border: none; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; cursor: pointer; }
         .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .badge-info { font-size: 10px; background: #eef2f7; padding: 4px 8px; border-radius: 8px; color: var(--primary); font-weight: bold; }
-
         .hidden { display: none; }
-        .chart-container { height: 300px; width: 100%; }
+        .chart-container { height: 250px; width: 100%; }
 
-        @media (max-width: 480px) {
-            .container { padding: 0 10px; }
-            table { font-size: 9px; }
-            td, th { padding: 8px 3px; }
+        @media (max-width: 480px) { .container { padding: 0 10px; } table { font-size: 9px; } td, th { padding: 8px 3px; } }
         }
     </style>
 </head>
