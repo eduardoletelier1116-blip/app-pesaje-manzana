@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Pesos | Fresh-Pak</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --bg-app: #f4f7f9;
             --card-bg: #ffffff;
-            --primary: #003366; /* Azul Fresh-Pak */
+            --primary: #003366;
             --text-label: #8e9aaf;
             --text-main: #2d3436;
             --input-bg: #f1f3f6;
@@ -34,11 +35,31 @@
             margin-bottom: 20px;
         }
 
-        .logo { height: 45px; margin-bottom: 10px; }
-        header h1 { font-size: 18px; margin: 0; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
-        header p { font-size: 12px; color: var(--text-label); margin: 5px 0 0; text-transform: uppercase; }
+        .logo { 
+            height: 45px; 
+            margin-bottom: 10px; 
+        }
 
-        .container { max-width: 500px; margin: auto; padding: 0 15px; }
+        header h1 { 
+            font-size: 18px; 
+            margin: 0; 
+            color: var(--primary); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+
+        header p { 
+            font-size: 12px; 
+            color: var(--text-label); 
+            margin: 5px 0 0; 
+            text-transform: uppercase; 
+        }
+
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            padding: 0 15px; 
+        }
 
         .card { 
             background: var(--card-bg); 
@@ -46,6 +67,16 @@
             border-radius: var(--border-radius); 
             box-shadow: var(--shadow); 
             margin-bottom: 20px; 
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-grid > div {
+            min-width: 0;
         }
 
         label { 
@@ -56,11 +87,14 @@
             margin-bottom: 8px; 
             text-transform: uppercase; 
             padding-left: 5px;
+            letter-spacing: 0.8px;
         }
 
         input, select { 
             width: 100%; 
-            padding: 14px; 
+            height: 54px;
+            min-height: 54px;
+            padding: 0 14px; 
             border: none; 
             background: var(--input-bg); 
             border-radius: 15px; 
@@ -71,7 +105,17 @@
             font-weight: 500;
         }
 
-        input:focus { outline: 2px solid #dfe6e9; }
+        input:focus,
+        select:focus { 
+            outline: 2px solid #dfe6e9; 
+        }
+
+        #peso {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+        }
 
         button { 
             width: 100%; 
@@ -84,9 +128,13 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: 0.3s;
+            letter-spacing: 1px;
         }
 
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:hover { 
+            opacity: 0.9; 
+            transform: translateY(-1px); 
+        }
 
         .collapsible-header {
             display: flex;
@@ -106,12 +154,35 @@
             margin-top: 0;
         }
 
-        .collapsible-content.open { max-height: 1000px; margin-top: 20px; }
+        .collapsible-content.open { 
+            max-height: 1000px; 
+            margin-top: 20px; 
+        }
 
-        .table-container { overflow-x: auto; min-height: 200px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { text-align: left; color: var(--text-label); padding: 10px; border-bottom: 1px solid #eee; text-transform: uppercase; }
-        td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; white-space: nowrap; }
+        .table-container { 
+            overflow-x: auto; 
+            min-height: 200px; 
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 11px; 
+        }
+
+        th { 
+            text-align: left; 
+            color: var(--text-label); 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            text-transform: uppercase; 
+        }
+
+        td { 
+            padding: 12px 10px; 
+            border-bottom: 1px solid #f9f9f9; 
+            white-space: nowrap; 
+        }
 
         .pagination {
             display: flex;
@@ -120,6 +191,7 @@
             gap: 15px;
             margin-top: 15px;
         }
+
         .btn-nav {
             background: var(--input-bg);
             color: var(--primary);
@@ -129,21 +201,112 @@
             border-radius: 50%;
             font-weight: bold;
             cursor: pointer;
+            padding: 0;
         }
-        .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .badge-info { font-size: 10px; background: #eef2f7; padding: 4px 8px; border-radius: 8px; color: var(--primary); font-weight: bold; }
+        .btn-nav:disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
+        }
 
-        .hidden { display: none; }
-        .chart-container { height: 300px; width: 100%; }
+        .badge-info { 
+            font-size: 10px; 
+            background: #eef2f7; 
+            padding: 4px 8px; 
+            border-radius: 8px; 
+            color: var(--primary); 
+            font-weight: bold; 
+        }
+
+        .hidden { 
+            display: none; 
+        }
+
+        .chart-container { 
+            height: 300px; 
+            width: 100%; 
+        }
 
         @media (max-width: 480px) {
-            .container { padding: 0 10px; }
-            table { font-size: 9px; }
-            td, th { padding: 8px 3px; }
+            .container { 
+                padding: 0 12px; 
+            }
+
+            .card {
+                padding: 22px 16px;
+                border-radius: 22px;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            label {
+                font-size: 10px;
+                min-height: 14px;
+                margin-bottom: 7px;
+                padding-left: 2px;
+            }
+
+            input,
+            select {
+                width: 100%;
+                height: 54px;
+                min-height: 54px;
+                padding: 0 12px;
+                margin-bottom: 15px;
+                font-size: 16px;
+                line-height: 1.2;
+                border-radius: 15px;
+                box-sizing: border-box;
+                appearance: none;
+                -webkit-appearance: none;
+            }
+
+            select {
+                background-color: var(--input-bg);
+                background-image:
+                    linear-gradient(45deg, transparent 50%, var(--text-main) 50%),
+                    linear-gradient(135deg, var(--text-main) 50%, transparent 50%);
+                background-position:
+                    calc(100% - 18px) 50%,
+                    calc(100% - 12px) 50%;
+                background-size: 6px 6px, 6px 6px;
+                background-repeat: no-repeat;
+                padding-right: 34px;
+            }
+
+            #peso {
+                height: 54px;
+                min-height: 54px;
+                font-size: 24px;
+                text-align: center;
+                padding: 0 12px;
+            }
+
+            button {
+                height: 56px;
+                padding: 0 16px;
+                font-size: 13px;
+            }
+
+            table {
+                font-size: 9px;
+            }
+
+            td,
+            th {
+                padding: 8px 3px;
+            }
+
+            .chart-container {
+                height: 260px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -167,19 +330,23 @@
                 <span>⚙️ Configuración de Objetivos</span>
                 <span id="iconToggle">▼</span>
             </div>
+
             <div class="collapsible-content" id="contentObjetivos">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-grid">
                     <div>
                         <label>Desde (Cal)</label>
                         <input type="number" id="calibreDesde" placeholder="72">
                     </div>
+
                     <div>
                         <label>Hasta (Cal)</label>
                         <input type="number" id="calibreHasta" placeholder="125">
                     </div>
                 </div>
+
                 <label>Peso Objetivo (kg)</label>
                 <input type="text" id="pesoObjetivo" placeholder="19.1">
+
                 <button onclick="agregarReglaObjetivo()" style="background:#4caf50; margin-bottom:15px;">Añadir Regla</button>
                 
                 <div class="table-container" style="min-height: auto;">
@@ -187,16 +354,19 @@
                         <tbody id="tablaObjetivos"></tbody>
                     </table>
                 </div>
+
                 <button class="hidden" onclick="limpiarObjetivos()" style="background:#e74c3c; margin-top:10px; padding:8px; font-size:10px;">Limpiar Reglas</button>
             </div>
         </div>
 
         <div class="card hidden" id="formCard">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+            <div class="form-grid">
                 <div>
                     <label>Operador</label>
                     <input type="text" id="operador" readonly>
                 </div>
+
                 <div>
                     <label>Exportadora</label>
                     <select id="exportadora" required onchange="actualizarGraficoDesdeFiltro()">
@@ -209,7 +379,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-grid">
                 <div>
                     <label>Variedad</label>
                     <select id="variedad" required onchange="actualizarGraficoDesdeFiltro()">
@@ -221,13 +391,14 @@
                         <option>Pink Lady</option>
                     </select>
                 </div>
+
                 <div>
                     <label>Salida</label>
                     <select id="salida" required></select>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-grid">
                 <div>
                     <label>Categoría</label>
                     <select id="categoria" required>
@@ -237,17 +408,24 @@
                         <option value="Choice">Choice</option>
                     </select>
                 </div>
+
                 <div>
                     <label>Calibre</label>
                     <input type="text" id="calibre" placeholder="Ej: 100" required>
                 </div>
             </div>
-            
-            <label>Lote</label>
-            <input type="text" id="lote" placeholder="Lote N°" required>
 
-            <label>Peso (kg)</label>
-            <input type="number" step="0.01" id="peso" placeholder="0.0" style="font-size: 24px; font-weight: bold; color: var(--primary);" required>
+            <div class="form-grid">
+                <div>
+                    <label>Lote</label>
+                    <input type="text" id="lote" placeholder="Lote N°" required>
+                </div>
+
+                <div>
+                    <label>Peso (kg)</label>
+                    <input type="number" step="0.01" id="peso" placeholder="0.0" required>
+                </div>
+            </div>
             
             <button type="submit" id="btnGuardar">Guardar Registro</button>
             <p id="msg" style="text-align:center; font-weight:bold; color:green;"></p>
@@ -255,14 +433,17 @@
 
         <div class="card hidden" id="graficoCard">
             <label id="tituloGrafico">Seguimiento de Calibres</label>
+
             <div class="chart-container">
                 <canvas id="graficoPesos"></canvas>
             </div>
+
             <div class="badge-info" id="infoObjetivos" style="margin-top:10px; display:block; text-align:center;"></div>
         </div>
 
         <div class="card hidden" id="registrosCard">
             <label>Historial del Día</label>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -279,11 +460,13 @@
                     <tbody id="tabla"></tbody>
                 </table>
             </div>
+
             <div class="pagination">
                 <button class="btn-nav" id="btnPrev" onclick="cambiarPagina(-1)">‹</button>
                 <span id="pageLabel" style="font-size: 12px; font-weight: bold; color: var(--primary);">1 / 1</span>
                 <button class="btn-nav" id="btnNext" onclick="cambiarPagina(1)">›</button>
             </div>
+
             <div id="estadoSync" style="font-size:10px; color:#ccc; text-align:right; margin-top:10px;">Sincronizando...</div>
         </div>
     </div>
@@ -292,6 +475,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
         const salidaSelect = document.getElementById("salida");
         const estadoSync = document.getElementById("estadoSync");
+
         let grafico = null;
         let cargando = false;
         let reglasObjetivo = [];
@@ -302,13 +486,15 @@
 
         for (let i = 1; i <= 41; i++) {
             let option = document.createElement("option");
-            option.value = i; option.text = i;
+            option.value = i;
+            option.text = i;
             salidaSelect.appendChild(option);
         }
 
         function toggleObjetivos() {
             const content = document.getElementById("contentObjetivos");
             const icon = document.getElementById("iconToggle");
+
             content.classList.toggle("open");
             icon.innerText = content.classList.contains("open") ? "▲" : "▼";
         }
@@ -326,13 +512,17 @@
             const dia = String(hoy.getDate()).padStart(2, "0");
             const mes = String(hoy.getMonth() + 1).padStart(2, "0");
             const fechaHoy = `${hoy.getFullYear()}-${mes}-${dia}`;
+
             return registros.filter(row => {
                 if (!row || row.length < 10) return false;
+
                 let fReg = row[0];
-                if(fReg.includes("/")) {
+
+                if (fReg.includes("/")) {
                     const p = fReg.split("/");
                     fReg = `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
                 }
+
                 return fReg === fechaHoy;
             });
         }
@@ -347,6 +537,7 @@
             tbody.innerHTML = "";
             
             const totalPaginas = Math.ceil(registrosDiaFull.length / filasPorPagina) || 1;
+
             if (paginaActual > totalPaginas) paginaActual = totalPaginas;
             if (paginaActual < 1) paginaActual = 1;
 
@@ -378,26 +569,50 @@
         }
 
         function guardarObjetivosEnServidor() {
-            return fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams({ accion: "guardarObjetivos", objetivos: JSON.stringify(reglasObjetivo) }) }).then(res => res.json());
+            return fetch(SCRIPT_URL, { 
+                method: "POST", 
+                body: new URLSearchParams({ 
+                    accion: "guardarObjetivos", 
+                    objetivos: JSON.stringify(reglasObjetivo) 
+                }) 
+            }).then(res => res.json());
         }
 
         function cargarObjetivosDesdeServidor() {
             return fetch(SCRIPT_URL + "?tipo=objetivos&t=" + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
-                    if (!Array.isArray(data)) { reglasObjetivo = []; return; }
-                    reglasObjetivo = data.filter((row, index) => row && row.length >= 3 && index > 0)
-                        .map(r => ({ desde: parseInt(r[0], 10), hasta: parseInt(r[1], 10), objetivo: Number(normalizarNumero(r[2]).toFixed(2)) }))
+                    if (!Array.isArray(data)) { 
+                        reglasObjetivo = []; 
+                        return; 
+                    }
+
+                    reglasObjetivo = data
+                        .filter((row, index) => row && row.length >= 3 && index > 0)
+                        .map(r => ({ 
+                            desde: parseInt(r[0], 10), 
+                            hasta: parseInt(r[1], 10), 
+                            objetivo: Number(normalizarNumero(r[2]).toFixed(2)) 
+                        }))
                         .filter(r => !isNaN(r.desde) && !isNaN(r.hasta) && !isNaN(r.objetivo));
-                }).catch(err => { console.error("Error objetivos:", err); });
+                })
+                .catch(err => { 
+                    console.error("Error objetivos:", err); 
+                });
         }
 
         function renderTablaObjetivos() {
             const tbody = document.getElementById("tablaObjetivos");
             tbody.innerHTML = "";
+
             reglasObjetivo.forEach((regla, index) => {
-                tbody.innerHTML += `<tr><td>C${regla.desde}-C${regla.hasta}</td><td><b>${regla.objetivo}kg</b></td><td><span onclick="eliminarRegla(${index})" style="color:red; cursor:pointer;">✕</span></td></tr>`;
+                tbody.innerHTML += `<tr>
+                    <td>C${regla.desde}-C${regla.hasta}</td>
+                    <td><b>${regla.objetivo}kg</b></td>
+                    <td><span onclick="eliminarRegla(${index})" style="color:red; cursor:pointer;">✕</span></td>
+                </tr>`;
             });
+
             const texto = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}:${r.objetivo}`).join(" | ");
             document.getElementById("infoObjetivos").innerText = texto || "Sin objetivos";
         }
@@ -406,31 +621,57 @@
             const desde = parseInt(document.getElementById("calibreDesde").value, 10);
             const hasta = parseInt(document.getElementById("calibreHasta").value, 10);
             const objetivo = normalizarNumero(document.getElementById("pesoObjetivo").value);
+
             if (isNaN(desde) || isNaN(hasta) || isNaN(objetivo)) return;
-            reglasObjetivo.push({ desde, hasta, objetivo: Number(objetivo.toFixed(2)) });
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
-            document.getElementById("calibreDesde").value = ""; document.getElementById("calibreHasta").value = ""; document.getElementById("pesoObjetivo").value = "";
+
+            reglasObjetivo.push({ 
+                desde, 
+                hasta, 
+                objetivo: Number(objetivo.toFixed(2)) 
+            });
+
+            guardarObjetivosEnServidor().then(() => { 
+                renderTablaObjetivos(); 
+                cargarRegistros(); 
+            });
+
+            document.getElementById("calibreDesde").value = "";
+            document.getElementById("calibreHasta").value = "";
+            document.getElementById("pesoObjetivo").value = "";
         }
 
         function eliminarRegla(index) {
             reglasObjetivo.splice(index, 1);
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
+
+            guardarObjetivosEnServidor().then(() => { 
+                renderTablaObjetivos(); 
+                cargarRegistros(); 
+            });
         }
 
         function limpiarObjetivos() {
             reglasObjetivo = [];
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
+
+            guardarObjetivosEnServidor().then(() => { 
+                renderTablaObjetivos(); 
+                cargarRegistros(); 
+            });
         }
 
         function obtenerObjetivoPorCalibre(calibre) {
             const c = parseInt(calibre, 10);
-            for (const r of reglasObjetivo) { if (c >= r.desde && c <= r.hasta) return r.objetivo; }
+
+            for (const r of reglasObjetivo) { 
+                if (c >= r.desde && c <= r.hasta) return r.objetivo; 
+            }
+
             return null;
         }
 
         function actualizarGrafico(registros) {
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
+
             let expSel = document.getElementById("exportadora").value;
             let varSel = document.getElementById("variedad").value;
 
@@ -442,12 +683,19 @@
 
             if (!registros || registros.length === 0 || !expSel) return;
 
-            const filtrados = registros.filter(row => String(row[3]).trim() === expSel && (varSel ? String(row[7]).trim() === varSel : true));
+            const filtrados = registros.filter(row => 
+                String(row[3]).trim() === expSel && 
+                (varSel ? String(row[7]).trim() === varSel : true)
+            );
+
             const grupos = {};
+
             filtrados.forEach(row => {
                 const cal = String(row[5]).trim();
                 const pes = normalizarNumero(row[9]);
+
                 if (!cal || isNaN(pes)) return;
+
                 if (!grupos[cal]) grupos[cal] = [];
                 grupos[cal].push(pes);
             });
@@ -458,45 +706,89 @@
             
             Object.keys(grupos).forEach((cal, idx) => {
                 const color = generarColor(idx);
-                datasets.push({ label: `C ${cal}`, data: grupos[cal], borderColor: color, backgroundColor: color, tension: 0.3, fill: false });
+
+                datasets.push({ 
+                    label: `C ${cal}`, 
+                    data: grupos[cal], 
+                    borderColor: color, 
+                    backgroundColor: color, 
+                    tension: 0.3, 
+                    fill: false 
+                });
+
                 const obj = obtenerObjetivoPorCalibre(cal);
+
                 if (obj !== null) {
-                    datasets.push({ label: `Obj`, data: Array(grupos[cal].length).fill(obj), borderColor: color, borderDash: [5, 5], pointRadius: 0, fill: false });
+                    datasets.push({ 
+                        label: `Obj`, 
+                        data: Array(grupos[cal].length).fill(obj), 
+                        borderColor: color, 
+                        borderDash: [5, 5], 
+                        pointRadius: 0, 
+                        fill: false 
+                    });
                 }
             });
 
             if (grafico) grafico.destroy();
+
             grafico = new Chart(ctx, {
-                type: "line", data: { labels, datasets },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                type: "line", 
+                data: { 
+                    labels, 
+                    datasets 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        } 
+                    } 
+                }
             });
         }
 
         function cargarRegistros() {
             if (cargando) return;
+
             cargando = true;
+
             Promise.all([
                 fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
                 cargarObjetivosDesdeServidor()
-            ]).then(([data]) => {
+            ])
+            .then(([data]) => {
                 registrosDiaFull = filtrarRegistrosPorDia(data);
                 actualizarTabla();
                 actualizarGrafico(registrosDiaFull);
                 estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
                 renderTablaObjetivos();
-            }).finally(() => { cargando = false; });
+            })
+            .finally(() => { 
+                cargando = false; 
+            });
         }
 
-        function actualizarGraficoDesdeFiltro() { cargarRegistros(); }
+        function actualizarGraficoDesdeFiltro() { 
+            cargarRegistros(); 
+        }
 
         function ingresarOperador() {
             const n = document.getElementById("nombreOperador").value.trim();
             const c = document.getElementById("claveOperador").value.trim();
+
             if (c === "fresh") {
                 operadorData.operador = n;
                 document.getElementById("operador").value = n;
+
                 document.getElementById("loginCard").classList.add("hidden");
-                ["formCard", "objetivosCard", "graficoCard", "registrosCard"].forEach(id => document.getElementById(id).classList.remove("hidden"));
+
+                ["formCard", "objetivosCard", "graficoCard", "registrosCard"].forEach(id => 
+                    document.getElementById(id).classList.remove("hidden")
+                );
+
                 cargarRegistros();
                 setInterval(cargarRegistros, 10000);
             } else {
@@ -506,8 +798,10 @@
 
         document.getElementById("btnGuardar").onclick = function() {
             const btn = this;
+
             btn.disabled = true;
             btn.innerText = "Guardando...";
+
             const data = {
                 operador: operadorData.operador,
                 exportadora: document.getElementById("exportadora").value,
@@ -518,17 +812,26 @@
                 lote: document.getElementById("lote").value,
                 peso: document.getElementById("peso").value
             };
-            fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
-                .then(() => {
-                    document.getElementById("msg").innerText = "¡Éxito!";
-                    document.getElementById("calibre").value = "";
-                    document.getElementById("peso").value = "";
-                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 2000);
-                    cargarRegistros();
-                }).finally(() => { 
-                    btn.disabled = false; 
-                    btn.innerText = "Guardar Registro"; 
-                });
+
+            fetch(SCRIPT_URL, { 
+                method: "POST", 
+                body: new URLSearchParams(data) 
+            })
+            .then(() => {
+                document.getElementById("msg").innerText = "¡Éxito!";
+                document.getElementById("calibre").value = "";
+                document.getElementById("peso").value = "";
+
+                setTimeout(() => { 
+                    document.getElementById("msg").innerText = ""; 
+                }, 2000);
+
+                cargarRegistros();
+            })
+            .finally(() => { 
+                btn.disabled = false; 
+                btn.innerText = "Guardar Registro"; 
+            });
         };
     </script>
 </body>
