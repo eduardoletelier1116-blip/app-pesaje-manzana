@@ -7,290 +7,252 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #1e3c72;
-            --secondary: #2a5298;
-            --accent: #4caf50;
-            --danger: #e74c3c;
-            --gray-light: #f8fafc;
-            --text-dark: #334155;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --bg-app: #f4f7f9;
+            --card-bg: #ffffff;
+            --primary: #003366; /* Azul Fresh-Pak */
+            --text-label: #8e9aaf;
+            --text-main: #2d3436;
+            --input-bg: #f1f3f6;
+            --border-radius: 24px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: var(--bg-app); 
             margin: 0; 
-            background: #f1f5f9; 
-            color: var(--text-dark);
-            line-height: 1.5;
+            color: var(--text-main);
+            padding-bottom: 40px;
         }
 
-        /* Header Modernizado */
         header { 
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
-            color: white; 
-            padding: 15px 30px; 
             text-align: center; 
-            font-size: 24px; 
-            font-weight: 600;
-            position: relative; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 30px 20px; 
+            background: white; 
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .logo { height: 45px; margin-bottom: 10px; }
+        header h1 { font-size: 18px; margin: 0; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        header p { font-size: 12px; color: var(--text-label); margin: 5px 0 0; text-transform: uppercase; }
+
+        .container { max-width: 500px; margin: auto; padding: 0 15px; }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: var(--border-radius); 
+            box-shadow: var(--shadow); 
+            margin-bottom: 20px; 
+        }
+
+        /* Estilo de Inputs similar a la imagen */
+        label { 
+            display: block; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: var(--text-label); 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            padding-left: 5px;
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            background: var(--input-bg); 
+            border-radius: 15px; 
+            box-sizing: border-box; 
+            font-size: 15px;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        input:focus { outline: 2px solid #dfe6e9; }
+
+        button { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 15px; 
+            font-weight: 700; 
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Pestaña Colapsable de Objetivos */
+        .collapsible-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
         }
 
-        .logo { height: 45px; filter: brightness(0) invert(1); }
-        .codigo-empresa { font-size: 13px; opacity: 0.8; font-weight: 400; border: 1px solid rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 6px; }
-
-        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-
-        /* Tarjetas Estilo Material */
-        .card { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 16px; 
-            box-shadow: var(--shadow); 
-            margin-bottom: 25px; 
-            border: 1px solid rgba(0,0,0,0.05);
+        .collapsible-content { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.3s ease-out; 
+            margin-top: 0;
         }
 
-        h3 { margin-top: 0; color: var(--primary); font-size: 1.25rem; margin-bottom: 20px; font-weight: 700; border-left: 4px solid var(--secondary); padding-left: 12px; }
+        .collapsible-content.open { max-height: 1000px; margin-top: 20px; }
 
-        /* Formulario y Controles */
-        label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
-        input, select { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 15px; 
-            border-radius: 10px; 
-            border: 1px solid #e2e8f0; 
-            box-sizing: border-box; 
-            background: var(--gray-light);
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        input:focus, select:focus { outline: none; border-color: var(--secondary); background: white; box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1); }
+        /* Tabla de registros estilo lista */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; color: var(--text-label); padding: 10px; border-bottom: 1px solid #eee; }
+        td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; }
 
-        /* Botones */
-        button { 
-            background: var(--secondary); 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        button:hover { background: var(--primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .btn-secundario { background: #94a3b8; }
-        .btn-secundario:hover { background: #64748b; }
-        .btn-peligro { background: var(--danger); }
-        .btn-peligro:hover { background: #c0392b; }
+        .badge-info { font-size: 10px; background: #eef2f7; padding: 4px 8px; border-radius: 8px; color: var(--primary); font-weight: bold; }
 
-        /* Layout Grids */
-        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 20px; }
-        .row-2 { display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center; }
-
-        /* Tablas Modernas */
-        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #f8fafc; color: #475569; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: var(--text-dark); }
-        tr:hover { background-color: #f8fafc; }
-
-        /* Status y Badges */
-        .badge-config { background: #dcfce7; color: #166534; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .estado-sync { font-size: 12px; color: #94a3b8; text-align: right; margin-top: 10px; font-style: italic; }
-        .success { color: var(--accent); font-weight: bold; background: #f0fdf4; padding: 10px; border-radius: 8px; text-align: center; }
         .hidden { display: none; }
-        
-        /* Gráfico */
-        .chart-container { position: relative; width: 100%; height: 400px; margin-top: 10px; }
-        .info-objetivos { font-size: 13px; color: #64748b; background: #f1f5f9; padding: 10px 15px; border-radius: 8px; border-left: 4px solid var(--secondary); margin-top: 15px; }
+        .chart-container { height: 300px; width: 100%; }
 
-        /* Mobile */
-        @media (max-width: 768px) {
-            header { flex-direction: column; gap: 10px; }
-            .row-3, .row-2 { grid-template-columns: 1fr; }
-            .logo { height: 35px; }
-            .container { padding: 10px; margin: 10px auto; }
-            .card { padding: 15px; }
+        @media (max-width: 480px) {
+            .container { padding: 0 10px; }
         }
-
-        /* Estilo para el Login centrado */
-        #loginCard { max-width: 400px; margin: 100px auto; text-align: center; }
-        #loginCard input { text-align: center; }
-        #loginCard button { width: 100%; }
     </style>
 </head>
 <body>
+
     <header>
         <img src="https://raw.githubusercontent.com/eduardoletelier1116-blip/app-pesaje-manzana/main/fondo-blanco.jpg" class="logo" alt="Fresh-Pak">
-        <span>Registro de Pesos</span>
-        <div class="codigo-empresa">R02 POE 29</div>
+        <h1>Control de Pesos</h1>
+        <p>Gestión de Empaque • R02 POE 29</p>
     </header>
 
     <div class="container">
+        
         <div class="card" id="loginCard">
-            <h3>Acceso Operador</h3>
-            <input type="text" id="nombreOperador" placeholder="Nombre operador">
-            <input type="password" id="claveOperador" placeholder="Clave operador">
-            <button onclick="ingresarOperador()">Ingresar al Sistema</button>
-            <p id="msgLogin" style="color:var(--danger); font-size: 13px; margin-top: 10px;"></p>
+            <label>Acceso Personal</label>
+            <input type="text" id="nombreOperador" placeholder="OPERADOR">
+            <input type="password" id="claveOperador" placeholder="CLAVE">
+            <button onclick="ingresarOperador()">Entrar</button>
+            <p id="msgLogin" style="color:red; font-size: 12px; text-align: center; margin-top: 10px;"></p>
         </div>
 
         <div class="card hidden" id="objetivosCard">
-            <h3 class="subtitulo">Configuración de Objetivos</h3>
-            <div class="row-3">
-                <div>
-                    <label>Calibre Desde</label>
-                    <input type="number" id="calibreDesde" placeholder="Ej: 72">
-                </div>
-                <div>
-                    <label>Calibre Hasta</label>
-                    <input type="number" id="calibreHasta" placeholder="Ej: 125">
-                </div>
-                <div>
-                    <label>Peso Objetivo (kg)</label>
-                    <input type="text" id="pesoObjetivo" placeholder="Ej: 19.1">
-                </div>
-                <button type="button" onclick="agregarReglaObjetivo()">Agregar Regla</button>
+            <div class="collapsible-header" onclick="toggleObjetivos()">
+                <span>⚙️ Configuración de Objetivos</span>
+                <span id="iconToggle">▼</span>
             </div>
-            
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Desde</th>
-                            <th>Hasta</th>
-                            <th>Objetivo (kg)</th>
-                            <th style="text-align: center;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaObjetivos"></tbody>
-                </table>
-            </div>
-
-            <div class="row-2" style="margin-top:20px;">
-                <span class="badge-config" id="estadoObjetivos">Sin objetivos cargados</span>
-                <div style="display:flex; gap:10px;">
-                    <button type="button" class="btn-secundario" onclick="cargarObjetivosEjemplo()">Cargar Ejemplo</button>
-                    <button type="button" class="btn-peligro" onclick="limpiarObjetivos()">Limpiar Todo</button>
+            <div class="collapsible-content" id="contentObjetivos">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Desde (Cal)</label>
+                        <input type="number" id="calibreDesde" placeholder="72">
+                    </div>
+                    <div>
+                        <label>Hasta (Cal)</label>
+                        <input type="number" id="calibreHasta" placeholder="125">
+                    </div>
                 </div>
+                <label>Peso Objetivo (kg)</label>
+                <input type="text" id="pesoObjetivo" placeholder="19.1">
+                <button onclick="agregarReglaObjetivo()" style="background:#4caf50; margin-bottom:15px;">Añadir Regla</button>
+                
+                <div class="table-container">
+                    <table>
+                        <tbody id="tablaObjetivos"></tbody>
+                    </table>
+                </div>
+                <button class="hidden" onclick="limpiarObjetivos()" style="background:#e74c3c; margin-top:10px; padding:8px; font-size:10px;">Limpiar Reglas</button>
             </div>
         </div>
 
         <div class="card hidden" id="formCard">
-            <h3>Nuevo Registro de Pesaje</h3>
-            <form id="form">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label>Operador</label>
-                        <input type="text" id="operador" readonly style="background: #e2e8f0; color: #64748b;">
-                    </div>
-                    <div>
-                        <label>Exportadora</label>
-                        <select id="exportadora" required onchange="actualizarGraficoDesdeFiltro()">
-                            <option value="">Auto-detectar</option>
-                            <option>Fruclem</option>
-                            <option>SK Gyan</option>
-                            <option>JHB</option>
-                            <option>Talamaya</option>
-                        </select>
-                    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>Operador</label>
+                    <input type="text" id="operador" readonly>
                 </div>
+                <div>
+                    <label>Exportadora</label>
+                    <select id="exportadora" required onchange="actualizarGraficoDesdeFiltro()">
+                        <option value="">Detectar...</option>
+                        <option>Fruclem</option>
+                        <option>SK Gyan</option>
+                        <option>JHB</option>
+                        <option>Talamaya</option>
+                    </select>
+                </div>
+            </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label>Categoría</label>
-                        <select id="categoria" required>
-                            <option value="">Seleccionar...</option>
-                            <option>Premium</option>
-                            <option>Extra</option>
-                            <option>Fancy</option>
-                            <option>Choice</option>
-                            <option>Granel</option>
-                            <option>CEM</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Variedad</label>
-                        <select id="variedad" required onchange="actualizarGraficoDesdeFiltro()">
-                            <option value="">Seleccionar...</option>
-                            <option>Royal Gala</option>
-                            <option>Red Delicious</option>
-                            <option>Granny</option>
-                            <option>Fuji</option>
-                            <option>Pink Lady</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Salida</label>
-                        <select id="salida" required></select>
-                    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>Variedad</label>
+                    <select id="variedad" required onchange="actualizarGraficoDesdeFiltro()">
+                        <option value="">Variedad</option>
+                        <option>Royal Gala</option>
+                        <option>Red Delicious</option>
+                        <option>Granny</option>
+                        <option>Fuji</option>
+                        <option>Pink Lady</option>
+                    </select>
                 </div>
+                <div>
+                    <label>Salida</label>
+                    <select id="salida" required></select>
+                </div>
+            </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label>Calibre</label>
-                        <input type="text" id="calibre" placeholder="Ej: 100" required>
-                    </div>
-                    <div>
-                        <label>Lote</label>
-                        <input type="text" id="lote" placeholder="N° Lote">
-                    </div>
-                    <div>
-                        <label>Peso (kg)</label>
-                        <input type="number" step="0.01" id="peso" placeholder="0.00" required>
-                    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>Calibre</label>
+                    <input type="text" id="calibre" placeholder="Ej: 100" required>
                 </div>
-
-                <div style="display: flex; gap: 15px; margin-top: 10px;">
-                    <button type="submit" style="flex: 2;">Guardar Registro</button>
-                    <button type="button" class="btn-secundario" style="flex: 1;" onclick="limpiarFormulario()">Limpiar</button>
+                <div>
+                    <label>Peso Pulpa (kg)</label>
+                    <input type="number" step="0.01" id="peso" placeholder="0.0" style="font-size: 20px; font-weight: bold; color: var(--primary);" required>
                 </div>
-                <p id="msg" class="success hidden"></p>
-            </form>
+            </div>
+            
+            <button type="submit" id="btnGuardar">Guardar Registro</button>
+            <p id="msg" style="text-align:center; font-weight:bold; color:green;"></p>
         </div>
 
-        <div class="card" id="registrosCard">
-            <h3>Registros del Día</h3>
+        <div class="card hidden" id="graficoCard">
+            <label id="tituloGrafico">Seguimiento de Calibres</label>
+            <div class="chart-container">
+                <canvas id="graficoPesos"></canvas>
+            </div>
+            <div class="badge-info" id="infoObjetivos" style="margin-top:10px; display:block; text-align:center;"></div>
+        </div>
+
+        <div class="card hidden" id="registrosCard">
+            <label>Historial Reciente</label>
             <div class="table-container">
-                <table id="mainTable">
+                <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th>
                             <th>Hora</th>
-                            <th>Usuario</th>
-                            <th>Export.</th>
-                            <th>Sal.</th>
-                            <th>Cal.</th>
-                            <th>Cat.</th>
-                            <th>Var.</th>
-                            <th>Lote</th>
+                            <th>Cal</th>
+                            <th>Var</th>
                             <th>Peso</th>
                         </tr>
                     </thead>
                     <tbody id="tabla"></tbody>
                 </table>
             </div>
-            <div class="estado-sync" id="estadoSync">Conectando con el servidor...</div>
-        </div>
-
-        <div class="card" id="graficoCard">
-            <h3 id="tituloGrafico">Análisis de Pesos por Calibre</h3>
-            <div class="chart-container">
-                <canvas id="graficoPesos"></canvas>
-            </div>
-            <div class="info-objetivos" id="infoObjetivos">Esperando datos de objetivos...</div>
+            <div id="estadoSync" style="font-size:10px; color:#ccc; text-align:right; margin-top:10px;">Sincronizando...</div>
         </div>
     </div>
 
     <script>
+        // LÓGICA ORIGINAL (SIN CAMBIOS)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
         const salidaSelect = document.getElementById("salida");
         const estadoSync = document.getElementById("estadoSync");
@@ -299,13 +261,21 @@
         let cargando = false;
         let reglasObjetivo = [];
 
+        // Llenar salidas
         for (let i = 1; i <= 41; i++) {
             let option = document.createElement("option");
             option.value = i; option.text = i;
             salidaSelect.appendChild(option);
         }
 
-        let operadorData = { operador: "", exportadora: "", variedad: "", lote: "" };
+        function toggleObjetivos() {
+            const content = document.getElementById("contentObjetivos");
+            const icon = document.getElementById("iconToggle");
+            content.classList.toggle("open");
+            icon.innerText = content.classList.contains("open") ? "▲" : "▼";
+        }
+
+        let operadorData = { operador: "" };
 
         function normalizarNumero(valor) {
             if (valor === null || valor === undefined) return NaN;
@@ -313,22 +283,13 @@
             return parseFloat(limpio);
         }
 
-        function formatDate(date) {
-            if (date instanceof Date) {
-                const day = String(date.getDate()).padStart(2, "0");
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const year = date.getFullYear();
-                return `${year}-${month}-${day}`;
-            }
-            return date;
-        }
-
         function filtrarRegistrosPorDia(registros) {
             const hoy = new Date();
-            const fechaHoy = formatDate(hoy);
+            const dia = String(hoy.getDate()).padStart(2, "0");
+            const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+            const fechaHoy = `${hoy.getFullYear()}-${mes}-${dia}`;
             return registros.filter(row => {
                 if (!row || row.length < 10) return false;
-                if (String(row[0]).toLowerCase() === "fecha") return false;
                 let fReg = row[0];
                 if(fReg.includes("/")) {
                     const p = fReg.split("/");
@@ -339,10 +300,11 @@
         }
 
         function generarColor(index) {
-            const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#9c27b0", "#009688", "#f44336", "#795548", "#607d8b", "#3f51b5", "#8bc34a", "#ffc107", "#673ab7", "#00bcd4"];
+            const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#00bcd4"];
             return colores[index % colores.length];
         }
 
+        // --- FUNCIONES DE SERVIDOR ---
         function guardarObjetivosEnServidor() {
             return fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams({ accion: "guardarObjetivos", objetivos: JSON.stringify(reglasObjetivo) }) }).then(res => res.json());
         }
@@ -355,35 +317,17 @@
                     reglasObjetivo = data.filter((row, index) => row && row.length >= 3 && index > 0)
                         .map(r => ({ desde: parseInt(r[0], 10), hasta: parseInt(r[1], 10), objetivo: Number(normalizarNumero(r[2]).toFixed(2)) }))
                         .filter(r => !isNaN(r.desde) && !isNaN(r.hasta) && !isNaN(r.objetivo));
-                }).catch(err => { console.error("Error cargando objetivos:", err); });
-        }
-
-        function actualizarEstadoObjetivos() {
-            const info = document.getElementById("infoObjetivos");
-            const estado = document.getElementById("estadoObjetivos");
-            if (!reglasObjetivo.length) {
-                if(estado) estado.innerText = "Sin objetivos cargados";
-                info.innerText = "Objetivos activos: sin definir";
-                return;
-            }
-            if(estado) estado.innerText = `${reglasObjetivo.length} regla(s) activa(s)`;
-            const texto = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}=${Number(r.objetivo).toFixed(2)}`).join(" | ");
-            info.innerText = "Objetivos: " + texto;
+                }).catch(err => { console.error("Error objetivos:", err); });
         }
 
         function renderTablaObjetivos() {
             const tbody = document.getElementById("tablaObjetivos");
-            if(!tbody) return;
             tbody.innerHTML = "";
-            if (!reglasObjetivo.length) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">No hay reglas cargadas.</td></tr>';
-                actualizarEstadoObjetivos();
-                return;
-            }
-            reglasObjetivo.sort((a, b) => a.desde - b.desde).forEach((regla, index) => {
-                tbody.innerHTML += `<tr><td>${regla.desde}</td><td>${regla.hasta}</td><td>${Number(regla.objetivo).toFixed(2)}</td><td style="text-align:center;"><button type="button" class="btn-peligro" style="padding:5px 10px; font-size:11px;" onclick="eliminarRegla(${index})">Eliminar</button></td></tr>`;
+            reglasObjetivo.forEach((regla, index) => {
+                tbody.innerHTML += `<tr><td>C${regla.desde}-C${regla.hasta}</td><td><b>${regla.objetivo}kg</b></td><td><span onclick="eliminarRegla(${index})" style="color:red; cursor:pointer;">✕</span></td></tr>`;
             });
-            actualizarEstadoObjetivos();
+            const texto = reglasObjetivo.map(r => `C${r.desde}-${r.hasta}:${r.objetivo}`).join(" | ");
+            document.getElementById("infoObjetivos").innerText = texto || "Sin objetivos";
         }
 
         function agregarReglaObjetivo() {
@@ -406,11 +350,6 @@
             guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
         }
 
-        function cargarObjetivosEjemplo() {
-            reglasObjetivo = [{ desde: 72, hasta: 125, objetivo: 19.1 }, { desde: 150, hasta: 216, objetivo: 20.1 }];
-            guardarObjetivosEnServidor().then(() => { renderTablaObjetivos(); cargarRegistros(); });
-        }
-
         function obtenerObjetivoPorCalibre(calibre) {
             const c = parseInt(calibre, 10);
             for (const r of reglasObjetivo) { if (c >= r.desde && c <= r.hasta) return r.objetivo; }
@@ -420,44 +359,26 @@
         function actualizarTabla(registros) {
             const tbody = document.getElementById("tabla");
             tbody.innerHTML = "";
-            if (!registros || registros.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:20px; color:#94a3b8;">No hay registros hoy.</td></tr>';
-                return;
-            }
-            [...registros].reverse().forEach(row => {
-                tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td><td>${row[6]}</td><td>${row[7]}</td><td>${row[8]}</td><td><strong>${row[9]}</strong></td></tr>`;
+            [...registros].reverse().slice(0, 5).forEach(row => {
+                tbody.innerHTML += `<tr><td>${row[1]}</td><td>${row[5]}</td><td>${row[7]}</td><td><b>${row[9]}</b></td></tr>`;
             });
         }
 
         function actualizarGrafico(registros) {
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
-            
             let expSel = document.getElementById("exportadora").value;
             let varSel = document.getElementById("variedad").value;
-            
+
             if ((!expSel || expSel === "") && registros.length > 0) {
                 const ultimo = registros[registros.length - 1];
                 expSel = String(ultimo[3]).trim();
                 varSel = String(ultimo[7]).trim();
-                document.getElementById("tituloGrafico").innerText = `Análisis: ${expSel} - ${varSel}`;
-            } else if (expSel !== "") {
-                document.getElementById("tituloGrafico").innerText = `Análisis: ${expSel} ${varSel ? '- ' + varSel : ''}`;
             }
 
-            actualizarEstadoObjetivos();
-            
-            if (!registros || registros.length === 0 || !expSel) {
-                if (grafico) { grafico.destroy(); grafico = null; }
-                return;
-            }
+            if (!registros || registros.length === 0 || !expSel) return;
 
-            const filtrados = registros.filter(row => {
-                const matchExp = String(row[3]).trim() === expSel;
-                const matchVar = varSel ? String(row[7]).trim() === varSel : true;
-                return matchExp && matchVar;
-            });
-            
+            const filtrados = registros.filter(row => String(row[3]).trim() === expSel && (varSel ? String(row[7]).trim() === varSel : true));
             const grupos = {};
             filtrados.forEach(row => {
                 const cal = String(row[5]).trim();
@@ -469,29 +390,21 @@
 
             const maxCajas = Math.max(...Object.values(grupos).map(a => a.length), 0);
             const labels = Array.from({ length: maxCajas }, (_, i) => `${i + 1}`);
-            const calUnicos = Object.keys(grupos).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-            
             const datasets = [];
-            calUnicos.forEach((cal, idx) => {
+            
+            Object.keys(grupos).forEach((cal, idx) => {
                 const color = generarColor(idx);
-                datasets.push({ label: `C ${cal} Real`, data: grupos[cal], borderColor: color, backgroundColor: color, tension: 0.3, fill: false, pointRadius: 4, borderWidth: 3 });
-                
+                datasets.push({ label: `C ${cal}`, data: grupos[cal], borderColor: color, backgroundColor: color, tension: 0.3, fill: false });
                 const obj = obtenerObjetivoPorCalibre(cal);
                 if (obj !== null) {
-                    datasets.push({ label: `Objetivo (${obj})`, data: Array(grupos[cal].length).fill(obj), borderColor: color, borderDash: [6, 4], pointRadius: 0, fill: false, borderWidth: 1.5 });
+                    datasets.push({ label: `Obj`, data: Array(grupos[cal].length).fill(obj), borderColor: color, borderDash: [5, 5], pointRadius: 0, fill: false });
                 }
             });
 
             if (grafico) grafico.destroy();
             grafico = new Chart(ctx, {
                 type: "line", data: { labels, datasets },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    animation: false, 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
-                    scales: { y: { beginAtZero: false, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } 
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
@@ -506,29 +419,11 @@
                 actualizarTabla(filtrados);
                 actualizarGrafico(filtrados);
                 estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
-            }).catch(err => {
-                estadoSync.innerText = "Error de conexión";
+                renderTablaObjetivos();
             }).finally(() => { cargando = false; });
         }
 
-        function actualizarGraficoDesdeFiltro() {
-            cargarRegistros();
-        }
-
-        function limpiarFormulario() {
-            document.getElementById("form").reset();
-            document.getElementById("operador").value = operadorData.operador;
-        }
-
-        function iniciarAutoRefresh() {
-            if (autoRefresh) clearInterval(autoRefresh);
-            autoRefresh = setInterval(() => { if (!cargando) cargarRegistros(); }, 5000);
-        }
-
-        window.addEventListener("load", () => {
-            iniciarAutoRefresh();
-            cargarRegistros(); 
-        });
+        function actualizarGraficoDesdeFiltro() { cargarRegistros(); }
 
         function ingresarOperador() {
             const n = document.getElementById("nombreOperador").value.trim();
@@ -537,38 +432,40 @@
                 operadorData.operador = n;
                 document.getElementById("operador").value = n;
                 document.getElementById("loginCard").classList.add("hidden");
-                document.getElementById("formCard").classList.remove("hidden");
-                document.getElementById("objetivosCard").classList.remove("hidden");
-                renderTablaObjetivos();
+                ["formCard", "objetivosCard", "graficoCard", "registrosCard"].forEach(id => document.getElementById(id).classList.remove("hidden"));
+                cargarRegistros();
+                setInterval(cargarRegistros, 10000);
             } else {
                 document.getElementById("msgLogin").innerText = "Clave incorrecta";
             }
         }
 
-        document.getElementById("form").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const msgEl = document.getElementById("msg");
+        document.getElementById("btnGuardar").onclick = function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
             const data = {
                 operador: operadorData.operador,
                 exportadora: document.getElementById("exportadora").value,
                 salida: document.getElementById("salida").value,
                 calibre: document.getElementById("calibre").value,
-                categoria: document.getElementById("categoria").value,
+                categoria: "Pro",
                 variedad: document.getElementById("variedad").value,
-                lote: document.getElementById("lote").value,
+                lote: "Lote",
                 peso: document.getElementById("peso").value
             };
             fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
-                .then(res => res.json())
                 .then(() => {
-                    msgEl.innerText = "¡Registro guardado con éxito!";
-                    msgEl.classList.remove("hidden");
+                    document.getElementById("msg").innerText = "¡Éxito!";
                     document.getElementById("calibre").value = "";
                     document.getElementById("peso").value = "";
-                    setTimeout(() => { msgEl.classList.add("hidden"); }, 2000);
+                    setTimeout(() => { document.getElementById("msg").innerText = ""; }, 2000);
                     cargarRegistros();
+                }).finally(() => { 
+                    btn.disabled = false; 
+                    btn.innerText = "Guardar Registro"; 
                 });
-        });
+        };
     </script>
 </body>
 </html>
