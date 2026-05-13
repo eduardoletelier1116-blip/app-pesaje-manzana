@@ -62,7 +62,7 @@
     <div class="card" id="graficoCard">
         <div class="card-body">
             <h5>Gráfico de Pesos</h5>
-            <canvas id="graficoPesos"></canvas>
+            <div style="height: 300px;"><canvas id="graficoPesos"></canvas></div>
         </div>
     </div>
 </div>
@@ -71,7 +71,6 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
     let miGrafico = null;
 
-    // Poblar salidas
     const s = document.getElementById("salida");
     for (let i = 1; i <= 41; i++) s.innerHTML += `<option value="${i}">${i}</option>`;
 
@@ -89,28 +88,29 @@
             .then(data => {
                 const tbody = document.getElementById("tabla");
                 tbody.innerHTML = "";
-                // Mostrar últimos 10
                 data.slice(-10).reverse().forEach(row => {
                     tbody.innerHTML += `<tr><td>${row[2]}</td><td>${row[4]}</td><td>${row[7]}</td><td>${row[5]}</td><td>${row[9]}</td></tr>`;
                 });
                 
-                // Actualizar Gráfico
                 const ctx = document.getElementById('graficoPesos').getContext('2d');
                 if (miGrafico) miGrafico.destroy();
                 miGrafico = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.slice(-10).map(r => r[1]), // Hora
-                        datasets: [{ label: 'Peso (kg)', data: data.slice(-10).map(r => r[9]), borderColor: '#2563eb', tension: 0.1 }]
-                    }
+                        labels: data.slice(-15).map(r => r[4]),
+                        datasets: [{ 
+                            label: 'Peso (kg)', data: data.slice(-15).map(r => r[9]), 
+                            borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 4, pointRadius: 6, tension: 0.3, fill: true 
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#e2e8f0' } }, x: { grid: { display: false } } } }
                 });
             });
     }
 
     document.getElementById("form").addEventListener("submit", (e) => {
         e.preventDefault();
-        const fd = new FormData(document.getElementById("form"));
-        // Aquí debes mapear correctamente tus campos al objeto que espera tu servidor
         const data = { operador: document.getElementById("operador").value, salida: document.getElementById("salida").value, variedad: document.getElementById("variedad").value, calibre: document.getElementById("calibre").value, peso: document.getElementById("peso").value };
         fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) }).then(() => {
             document.getElementById("peso").value = "";
