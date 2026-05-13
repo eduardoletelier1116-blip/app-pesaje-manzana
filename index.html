@@ -53,15 +53,13 @@
     <div class="card" id="registrosCard">
         <div class="card-body">
             <h5>Registros</h5>
-            <div class="table-responsive">
-                <table class="table"><thead><tr><th>Op</th><th>Sal</th><th>Var</th><th>Cal</th><th>Peso</th></tr></thead><tbody id="tabla"></tbody></table>
-            </div>
+            <div class="table-responsive"><table class="table"><thead><tr><th>Op</th><th>Sal</th><th>Var</th><th>Cal</th><th>Peso</th></tr></thead><tbody id="tabla"></tbody></table></div>
         </div>
     </div>
 
     <div class="card" id="graficoCard">
         <div class="card-body">
-            <h5>Gráfico de Pesos</h5>
+            <h5>Seguimiento de Pesos</h5>
             <div style="height: 300px;"><canvas id="graficoPesos"></canvas></div>
         </div>
     </div>
@@ -92,19 +90,26 @@
                     tbody.innerHTML += `<tr><td>${row[2]}</td><td>${row[4]}</td><td>${row[7]}</td><td>${row[5]}</td><td>${row[9]}</td></tr>`;
                 });
                 
+                // Lógica del Gráfico estilo TV
                 const ctx = document.getElementById('graficoPesos').getContext('2d');
                 if (miGrafico) miGrafico.destroy();
+                
+                const calibres = [...new Set(data.slice(-15).map(r => r[5]))];
+                const datasets = calibres.map((cal, i) => {
+                    const color = `hsl(${i * 60}, 70%, 50%)`;
+                    return {
+                        label: `Calibre ${cal}`,
+                        data: data.slice(-15).filter(r => r[5] == cal).map(r => r[9]),
+                        borderColor: color,
+                        borderWidth: 3,
+                        tension: 0.3
+                    };
+                });
+
                 miGrafico = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: data.slice(-15).map(r => r[4]),
-                        datasets: [{ 
-                            label: 'Peso (kg)', data: data.slice(-15).map(r => r[9]), 
-                            borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 4, pointRadius: 6, tension: 0.3, fill: true 
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#e2e8f0' } }, x: { grid: { display: false } } } }
+                    data: { labels: Array.from({length: 15}, (_, i) => i+1), datasets: datasets },
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
             });
     }
