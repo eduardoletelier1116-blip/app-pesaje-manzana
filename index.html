@@ -139,8 +139,8 @@
 
         @media (max-width: 480px) {
             .container { padding: 0 10px; }
-            table { font-size: 10px; }
-            td, th { padding: 8px 5px; }
+            table { font-size: 9px; }
+            td, th { padding: 8px 3px; }
         }
     </style>
 </head>
@@ -262,6 +262,7 @@
                             <th>Hora</th>
                             <th>Op.</th>
                             <th>Sal.</th>
+                            <th>Cat.</th>
                             <th>Cal</th>
                             <th>Lote</th>
                             <th>Peso</th>
@@ -333,7 +334,6 @@
             return colores[index % colores.length];
         }
 
-        // --- NAVEGACIÓN DE TABLA ---
         function actualizarTabla() {
             const tbody = document.getElementById("tabla");
             tbody.innerHTML = "";
@@ -348,11 +348,12 @@
             const filtrados = [...registrosDiaFull].reverse().slice(inicio, fin);
 
             filtrados.forEach(row => {
-                // row[1]: Hora, row[2]: Operador, row[4]: Salida, row[5]: Calibre, row[8]: Lote, row[9]: Peso
+                // row[1]: Hora, row[2]: Operador, row[4]: Salida, row[6]: Categoria, row[5]: Calibre, row[8]: Lote, row[9]: Peso
                 tbody.innerHTML += `<tr>
                     <td>${row[1]}</td>
                     <td>${row[2]}</td>
                     <td>${row[4]}</td>
+                    <td>${row[6]}</td>
                     <td>${row[5]}</td>
                     <td>${row[8]}</td>
                     <td><b>${row[9]}</b></td>
@@ -369,7 +370,6 @@
             actualizarTabla();
         }
 
-        // --- FUNCIONES DE SERVIDOR ---
         function guardarObjetivosEnServidor() {
             return fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams({ accion: "guardarObjetivos", objetivos: JSON.stringify(reglasObjetivo) }) }).then(res => res.json());
         }
