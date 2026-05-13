@@ -48,7 +48,6 @@
             margin-bottom: 20px; 
         }
 
-        /* Estilo de Inputs similar a la imagen */
         label { 
             display: block; 
             font-size: 11px; 
@@ -89,7 +88,6 @@
 
         button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* Pestaña Colapsable de Objetivos */
         .collapsible-header {
             display: flex;
             justify-content: space-between;
@@ -110,11 +108,30 @@
 
         .collapsible-content.open { max-height: 1000px; margin-top: 20px; }
 
-        /* Tabla de registros estilo lista */
-        .table-container { overflow-x: auto; }
+        .table-container { overflow-x: auto; min-height: 200px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { text-align: left; color: var(--text-label); padding: 10px; border-bottom: 1px solid #eee; }
         td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; }
+
+        /* Estilos de Paginación */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .btn-nav {
+            background: var(--input-bg);
+            color: var(--primary);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .badge-info { font-size: 10px; background: #eef2f7; padding: 4px 8px; border-radius: 8px; color: var(--primary); font-weight: bold; }
 
@@ -164,7 +181,7 @@
                 <input type="text" id="pesoObjetivo" placeholder="19.1">
                 <button onclick="agregarReglaObjetivo()" style="background:#4caf50; margin-bottom:15px;">Añadir Regla</button>
                 
-                <div class="table-container">
+                <div class="table-container" style="min-height: auto;">
                     <table>
                         <tbody id="tablaObjetivos"></tbody>
                     </table>
@@ -215,10 +232,13 @@
                     <input type="text" id="calibre" placeholder="Ej: 100" required>
                 </div>
                 <div>
-                    <label>Peso Pulpa (kg)</label>
-                    <input type="number" step="0.01" id="peso" placeholder="0.0" style="font-size: 20px; font-weight: bold; color: var(--primary);" required>
+                    <label>Lote</label>
+                    <input type="text" id="lote" placeholder="Lote N°" required>
                 </div>
             </div>
+
+            <label>Peso (kg)</label>
+            <input type="number" step="0.01" id="peso" placeholder="0.0" style="font-size: 24px; font-weight: bold; color: var(--primary);" required>
             
             <button type="submit" id="btnGuardar">Guardar Registro</button>
             <p id="msg" style="text-align:center; font-weight:bold; color:green;"></p>
@@ -233,35 +253,42 @@
         </div>
 
         <div class="card hidden" id="registrosCard">
-            <label>Historial Reciente</label>
+            <label>Historial del Día</label>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>Hora</th>
                             <th>Cal</th>
-                            <th>Var</th>
+                            <th>Lote</th>
                             <th>Peso</th>
                         </tr>
                     </thead>
                     <tbody id="tabla"></tbody>
                 </table>
             </div>
+            <div class="pagination">
+                <button class="btn-nav" id="btnPrev" onclick="cambiarPagina(-1)">‹</button>
+                <span id="pageLabel" style="font-size: 12px; font-weight: bold; color: var(--primary);">1 / 1</span>
+                <button class="btn-nav" id="btnNext" onclick="cambiarPagina(1)">›</button>
+            </div>
             <div id="estadoSync" style="font-size:10px; color:#ccc; text-align:right; margin-top:10px;">Sincronizando...</div>
         </div>
     </div>
 
     <script>
-        // LÓGICA ORIGINAL (SIN CAMBIOS)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
         const salidaSelect = document.getElementById("salida");
         const estadoSync = document.getElementById("estadoSync");
         let grafico = null;
-        let autoRefresh = null;
         let cargando = false;
         let reglasObjetivo = [];
+        
+        // Variables para paginación
+        let registrosDiaFull = [];
+        let paginaActual = 1;
+        const filasPorPagina = 5;
 
-        // Llenar salidas
         for (let i = 1; i <= 41; i++) {
             let option = document.createElement("option");
             option.value = i; option.text = i;
@@ -302,6 +329,35 @@
         function generarColor(index) {
             const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#00bcd4"];
             return colores[index % colores.length];
+        }
+
+        // --- NAVEGACIÓN DE TABLA ---
+        function actualizarTabla() {
+            const tbody = document.getElementById("tabla");
+            tbody.innerHTML = "";
+            
+            const totalPaginas = Math.ceil(registrosDiaFull.length / filasPorPagina) || 1;
+            if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+            if (paginaActual < 1) paginaActual = 1;
+
+            const inicio = (paginaActual - 1) * filasPorPagina;
+            const fin = inicio + filasPorPagina;
+            
+            // Invertimos para ver lo más nuevo primero
+            const filtrados = [...registrosDiaFull].reverse().slice(inicio, fin);
+
+            filtrados.forEach(row => {
+                tbody.innerHTML += `<tr><td>${row[1]}</td><td>${row[5]}</td><td>${row[8]}</td><td><b>${row[9]}</b></td></tr>`;
+            });
+
+            document.getElementById("pageLabel").innerText = `${paginaActual} / ${totalPaginas}`;
+            document.getElementById("btnPrev").disabled = paginaActual === 1;
+            document.getElementById("btnNext").disabled = paginaActual === totalPaginas;
+        }
+
+        function cambiarPagina(dir) {
+            paginaActual += dir;
+            actualizarTabla();
         }
 
         // --- FUNCIONES DE SERVIDOR ---
@@ -356,14 +412,6 @@
             return null;
         }
 
-        function actualizarTabla(registros) {
-            const tbody = document.getElementById("tabla");
-            tbody.innerHTML = "";
-            [...registros].reverse().slice(0, 5).forEach(row => {
-                tbody.innerHTML += `<tr><td>${row[1]}</td><td>${row[5]}</td><td>${row[7]}</td><td><b>${row[9]}</b></td></tr>`;
-            });
-        }
-
         function actualizarGrafico(registros) {
             const canvas = document.getElementById("graficoPesos");
             const ctx = canvas.getContext("2d");
@@ -415,9 +463,9 @@
                 fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()),
                 cargarObjetivosDesdeServidor()
             ]).then(([data]) => {
-                const filtrados = filtrarRegistrosPorDia(data);
-                actualizarTabla(filtrados);
-                actualizarGrafico(filtrados);
+                registrosDiaFull = filtrarRegistrosPorDia(data);
+                actualizarTabla();
+                actualizarGrafico(registrosDiaFull);
                 estadoSync.innerText = "Sincronizado: " + new Date().toLocaleTimeString();
                 renderTablaObjetivos();
             }).finally(() => { cargando = false; });
@@ -451,12 +499,13 @@
                 calibre: document.getElementById("calibre").value,
                 categoria: "Pro",
                 variedad: document.getElementById("variedad").value,
-                lote: "Lote",
+                lote: document.getElementById("lote").value, // Capturamos el lote real
                 peso: document.getElementById("peso").value
             };
             fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
                 .then(() => {
                     document.getElementById("msg").innerText = "¡Éxito!";
+                    // Limpiamos calibre y peso, pero MANTENEMOS lote
                     document.getElementById("calibre").value = "";
                     document.getElementById("peso").value = "";
                     setTimeout(() => { document.getElementById("msg").innerText = ""; }, 2000);
