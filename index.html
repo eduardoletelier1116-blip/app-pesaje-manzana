@@ -20,46 +20,25 @@
 <body>
 
 <div class="container py-3">
-    <div class="card" id="loginCard">
-        <div class="header-app"><h5>Ingreso Operador</h5></div>
-        <div class="card-body p-4">
-            <input type="text" id="nombreOperador" class="form-control mb-3" placeholder="Nombre operador">
-            <input type="password" id="claveOperador" class="form-control mb-3" placeholder="Clave">
-            <button class="btn btn-primary w-100" onclick="ingresarOperador()">INGRESAR</button>
-        </div>
-    </div>
+    <div class="card" id="loginCard"><div class="header-app"><h5>Ingreso</h5></div><div class="card-body p-4"><input type="text" id="nombreOperador" class="form-control mb-3" placeholder="Operador"><input type="password" id="claveOperador" class="form-control mb-3" placeholder="Clave"><button class="btn btn-primary w-100" onclick="ingresarOperador()">ENTRAR</button></div></div>
 
     <div class="card hidden" id="formCard">
-        <div class="header-app"><h5>Nuevo Registro</h5></div>
-        <div class="card-body p-4">
-            <form id="form">
-                <input type="text" id="operador" class="form-control mb-3" readonly>
-                <div class="row g-2">
-                    <div class="col-6"><select id="exportadora" class="form-select mb-3"><option value="">Exportadora</option><option>Fruclem</option><option>SK Gyan</option><option>JHB</option></select></div>
-                    <div class="col-6"><select id="categoria" class="form-select mb-3"><option value="">Categoría</option><option>Premium</option><option>Extra</option><option>Fancy</option></select></div>
-                </div>
-                <select id="variedad" class="form-select mb-3"><option value="">Variedad</option><option>Royal Gala</option><option>Granny</option><option>Fuji</option></select>
-                <div class="row g-2">
-                    <div class="col-4"><select id="salida" class="form-select mb-3"><option value="">Salida</option></select></div>
-                    <div class="col-4"><input type="text" id="calibre" class="form-control" placeholder="Calibre"></div>
-                    <div class="col-4"><input type="text" id="lote" class="form-control" placeholder="Lote"></div>
-                </div>
-                <input type="number" step="0.01" id="peso" class="form-control mb-3" placeholder="Peso (kg)" required>
-                <button type="submit" class="btn btn-primary w-100">GUARDAR REGISTRO</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="card" id="registrosCard">
         <div class="card-body">
-            <h5>Registros</h5>
-            <div class="table-responsive"><table class="table"><thead><tr><th>Op</th><th>Sal</th><th>Var</th><th>Cal</th><th>Peso</th></tr></thead><tbody id="tabla"></tbody></table></div>
+            <form id="form">
+                <input type="text" id="operador" class="form-control mb-2" readonly>
+                <div class="row g-2">
+                    <div class="col-4"><select id="salida" class="form-select mb-2"><option value="">Salida</option></select></div>
+                    <div class="col-4"><input type="text" id="calibre" class="form-control" placeholder="Calibre"></div>
+                    <div class="col-4"><input type="number" step="0.01" id="peso" class="form-control" placeholder="Peso" required></div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">GUARDAR</button>
+            </form>
         </div>
     </div>
 
     <div class="card" id="graficoCard">
         <div class="card-body">
-            <h5>Seguimiento de Pesos</h5>
+            <h5>Gráfico con Objetivos</h5>
             <div style="height: 300px;"><canvas id="graficoPesos"></canvas></div>
         </div>
     </div>
@@ -68,9 +47,44 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
     let miGrafico = null;
+    // Regla de ejemplo (puedes expandir esto)
+    const objetivos = { "72": 19.1, "125": 20.1 };
 
-    const s = document.getElementById("salida");
-    for (let i = 1; i <= 41; i++) s.innerHTML += `<option value="${i}">${i}</option>`;
+    function cargarRegistros() {
+        fetch(SCRIPT_URL + "?t=" + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('graficoPesos').getContext('2d');
+                if (miGrafico) miGrafico.destroy();
+                
+                const calibres = [...new Set(data.slice(-15).map(r => r[5]))];
+                let datasets = [];
+
+                calibres.forEach((cal, i) => {
+                    const color = `hsl(${i * 80}, 70%, 50%)`;
+                    // Línea real
+                    datasets.push({
+                        label: `Cal ${cal}`,
+                        data: data.slice(-15).filter(r => r[5] == cal).map(r => r[9]),
+                        borderColor: color, borderWidth: 3, tension: 0.3
+                    });
+                    // Línea objetivo (Segmentada)
+                    if(objetivos[cal]) {
+                        datasets.push({
+                            label: `Obj ${cal}`,
+                            data: Array(15).fill(objetivos[cal]),
+                            borderColor: color, borderDash: [5, 5], borderWidth: 2, pointRadius: 0
+                        });
+                    }
+                });
+
+                miGrafico = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: Array(15).fill(''), datasets: datasets },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            });
+    }
 
     function ingresarOperador() {
         if (document.getElementById("claveOperador").value === "fresh") {
@@ -80,47 +94,10 @@
         }
     }
 
-    function cargarRegistros() {
-        fetch(SCRIPT_URL + "?t=" + new Date().getTime())
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.getElementById("tabla");
-                tbody.innerHTML = "";
-                data.slice(-10).reverse().forEach(row => {
-                    tbody.innerHTML += `<tr><td>${row[2]}</td><td>${row[4]}</td><td>${row[7]}</td><td>${row[5]}</td><td>${row[9]}</td></tr>`;
-                });
-                
-                // Lógica del Gráfico estilo TV
-                const ctx = document.getElementById('graficoPesos').getContext('2d');
-                if (miGrafico) miGrafico.destroy();
-                
-                const calibres = [...new Set(data.slice(-15).map(r => r[5]))];
-                const datasets = calibres.map((cal, i) => {
-                    const color = `hsl(${i * 60}, 70%, 50%)`;
-                    return {
-                        label: `Calibre ${cal}`,
-                        data: data.slice(-15).filter(r => r[5] == cal).map(r => r[9]),
-                        borderColor: color,
-                        borderWidth: 3,
-                        tension: 0.3
-                    };
-                });
-
-                miGrafico = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: Array.from({length: 15}, (_, i) => i+1), datasets: datasets },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            });
-    }
-
     document.getElementById("form").addEventListener("submit", (e) => {
         e.preventDefault();
-        const data = { operador: document.getElementById("operador").value, salida: document.getElementById("salida").value, variedad: document.getElementById("variedad").value, calibre: document.getElementById("calibre").value, peso: document.getElementById("peso").value };
-        fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) }).then(() => {
-            document.getElementById("peso").value = "";
-            cargarRegistros();
-        });
+        const data = { operador: document.getElementById("operador").value, salida: document.getElementById("salida").value, calibre: document.getElementById("calibre").value, peso: document.getElementById("peso").value };
+        fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) }).then(cargarRegistros);
     });
 
     window.onload = cargarRegistros;
