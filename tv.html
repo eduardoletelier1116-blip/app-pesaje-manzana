@@ -109,7 +109,6 @@
         let graficoTV = null;
         let cargando = false;
         let reglasObjetivo = [];
-        let datosFiltradosParaGrafico = []; // Variable auxiliar para el alcance del tooltip
 
         function actualizarReloj() {
             const ahora = new Date();
@@ -166,7 +165,6 @@
         }
 
         function actualizarGrafico(registros) {
-            datosFiltradosParaGrafico = registros; 
             const ctx = document.getElementById("graficoPesosTV").getContext("2d");
             const grupos = {};
             registros.forEach(row => {
@@ -203,13 +201,21 @@
                     plugins: { 
                         legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, filter: (item) => !item.text.includes('Obj') } },
                         tooltip: {
+                            backgroundColor: 'rgba(30, 60, 114, 0.95)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            borderColor: '#ffffff',
+                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
+                                    if (context.dataset.label.includes("Obj")) return null;
                                     const cal = context.dataset.label.replace("C", "");
                                     const index = context.dataIndex;
-                                    const registrosCalibre = grupos[cal];
-                                    const hora = registrosCalibre[index] ? registrosCalibre[index].hora : "--:--";
-                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} | Hora: ${hora}`;
+                                    const hora = grupos[cal][index] ? grupos[cal][index].hora : "--:--";
+                                    return `Calibre ${cal}: ${context.parsed.y.toFixed(2)} | Hora: ${hora}`;
                                 }
                             }
                         }
