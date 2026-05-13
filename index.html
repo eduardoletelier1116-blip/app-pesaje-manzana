@@ -109,11 +109,10 @@
         .collapsible-content.open { max-height: 1000px; margin-top: 20px; }
 
         .table-container { overflow-x: auto; min-height: 200px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { text-align: left; color: var(--text-label); padding: 10px; border-bottom: 1px solid #eee; }
-        td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th { text-align: left; color: var(--text-label); padding: 10px; border-bottom: 1px solid #eee; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; white-space: nowrap; }
 
-        /* Estilos de Paginación */
         .pagination {
             display: flex;
             justify-content: center;
@@ -140,6 +139,8 @@
 
         @media (max-width: 480px) {
             .container { padding: 0 10px; }
+            table { font-size: 10px; }
+            td, th { padding: 8px 5px; }
         }
     </style>
 </head>
@@ -259,6 +260,8 @@
                     <thead>
                         <tr>
                             <th>Hora</th>
+                            <th>Op.</th>
+                            <th>Sal.</th>
                             <th>Cal</th>
                             <th>Lote</th>
                             <th>Peso</th>
@@ -284,7 +287,6 @@
         let cargando = false;
         let reglasObjetivo = [];
         
-        // Variables para paginación
         let registrosDiaFull = [];
         let paginaActual = 1;
         const filasPorPagina = 5;
@@ -343,11 +345,18 @@
             const inicio = (paginaActual - 1) * filasPorPagina;
             const fin = inicio + filasPorPagina;
             
-            // Invertimos para ver lo más nuevo primero
             const filtrados = [...registrosDiaFull].reverse().slice(inicio, fin);
 
             filtrados.forEach(row => {
-                tbody.innerHTML += `<tr><td>${row[1]}</td><td>${row[5]}</td><td>${row[8]}</td><td><b>${row[9]}</b></td></tr>`;
+                // row[1]: Hora, row[2]: Operador, row[4]: Salida, row[5]: Calibre, row[8]: Lote, row[9]: Peso
+                tbody.innerHTML += `<tr>
+                    <td>${row[1]}</td>
+                    <td>${row[2]}</td>
+                    <td>${row[4]}</td>
+                    <td>${row[5]}</td>
+                    <td>${row[8]}</td>
+                    <td><b>${row[9]}</b></td>
+                </tr>`;
             });
 
             document.getElementById("pageLabel").innerText = `${paginaActual} / ${totalPaginas}`;
@@ -499,13 +508,12 @@
                 calibre: document.getElementById("calibre").value,
                 categoria: "Pro",
                 variedad: document.getElementById("variedad").value,
-                lote: document.getElementById("lote").value, // Capturamos el lote real
+                lote: document.getElementById("lote").value,
                 peso: document.getElementById("peso").value
             };
             fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) })
                 .then(() => {
                     document.getElementById("msg").innerText = "¡Éxito!";
-                    // Limpiamos calibre y peso, pero MANTENEMOS lote
                     document.getElementById("calibre").value = "";
                     document.getElementById("peso").value = "";
                     setTimeout(() => { document.getElementById("msg").innerText = ""; }, 2000);
