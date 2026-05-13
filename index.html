@@ -227,6 +227,34 @@
             width: 100%; 
         }
 
+        .historial-filtros {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .historial-filtros input,
+        .historial-filtros select {
+            margin-bottom: 0;
+        }
+
+        .btn-limpiar-filtros {
+            background: #eef2f7;
+            color: var(--primary);
+            font-size: 11px;
+            padding: 12px;
+            height: 54px;
+        }
+
+        .resumen-filtros {
+            font-size: 10px;
+            color: var(--text-label);
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
         @media (max-width: 480px) {
             .container { 
                 padding: 0 12px; 
@@ -289,6 +317,17 @@
                 height: 56px;
                 padding: 0 16px;
                 font-size: 13px;
+            }
+
+            .historial-filtros {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .btn-limpiar-filtros {
+                height: 54px;
+                font-size: 10px;
+                padding: 0 10px;
             }
 
             table {
@@ -444,6 +483,45 @@
         <div class="card hidden" id="registrosCard">
             <label>Historial del Día</label>
 
+            <div class="historial-filtros">
+                <input 
+                    type="text" 
+                    id="filtroHistorialTexto" 
+                    placeholder="Buscar..."
+                    oninput="aplicarFiltrosHistorial()"
+                >
+
+                <select 
+                    id="filtroHistorialSalida" 
+                    onchange="aplicarFiltrosHistorial()"
+                >
+                    <option value="">Todas salidas</option>
+                </select>
+
+                <select 
+                    id="filtroHistorialCategoria" 
+                    onchange="aplicarFiltrosHistorial()"
+                >
+                    <option value="">Todas categorías</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Extra">Extra</option>
+                    <option value="Fancy">Fancy</option>
+                    <option value="Choice">Choice</option>
+                </select>
+
+                <button 
+                    type="button" 
+                    class="btn-limpiar-filtros" 
+                    onclick="limpiarFiltrosHistorial()"
+                >
+                    Limpiar
+                </button>
+            </div>
+
+            <div class="resumen-filtros" id="resumenFiltrosHistorial">
+                Mostrando registros del día
+            </div>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -474,6 +552,7 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
         const salidaSelect = document.getElementById("salida");
+        const filtroSalidaSelect = document.getElementById("filtroHistorialSalida");
         const estadoSync = document.getElementById("estadoSync");
 
         let grafico = null;
@@ -489,6 +568,11 @@
             option.value = i;
             option.text = i;
             salidaSelect.appendChild(option);
+
+            let optionFiltro = document.createElement("option");
+            optionFiltro.value = i;
+            optionFiltro.text = i;
+            filtroSalidaSelect.appendChild(optionFiltro);
         }
 
         function toggleObjetivos() {
@@ -532,11 +616,60 @@
             return colores[index % colores.length];
         }
 
+        function obtenerRegistrosFiltrados() {
+            const texto = document.getElementById("filtroHistorialTexto").value.trim().toLowerCase();
+            const salidaFiltro = document.getElementById("filtroHistorialSalida").value;
+            const categoriaFiltro = document.getElementById("filtroHistorialCategoria").value;
+
+            return registrosDiaFull.filter(row => {
+                const hora = String(row[1] || "").toLowerCase();
+                const operador = String(row[2] || "").toLowerCase();
+                const exportadora = String(row[3] || "").toLowerCase();
+                const salida = String(row[4] || "").trim();
+                const calibre = String(row[5] || "").toLowerCase();
+                const categoria = String(row[6] || "").trim();
+                const variedad = String(row[7] || "").toLowerCase();
+                const lote = String(row[8] || "").toLowerCase();
+                const peso = String(row[9] || "").toLowerCase();
+
+                const coincideTexto = !texto || 
+                    hora.includes(texto) ||
+                    operador.includes(texto) ||
+                    exportadora.includes(texto) ||
+                    salida.includes(texto) ||
+                    calibre.includes(texto) ||
+                    categoria.toLowerCase().includes(texto) ||
+                    variedad.includes(texto) ||
+                    lote.includes(texto) ||
+                    peso.includes(texto);
+
+                const coincideSalida = !salidaFiltro || salida === salidaFiltro;
+                const coincideCategoria = !categoriaFiltro || categoria === categoriaFiltro;
+
+                return coincideTexto && coincideSalida && coincideCategoria;
+            });
+        }
+
+        function aplicarFiltrosHistorial() {
+            paginaActual = 1;
+            actualizarTabla();
+        }
+
+        function limpiarFiltrosHistorial() {
+            document.getElementById("filtroHistorialTexto").value = "";
+            document.getElementById("filtroHistorialSalida").value = "";
+            document.getElementById("filtroHistorialCategoria").value = "";
+
+            paginaActual = 1;
+            actualizarTabla();
+        }
+
         function actualizarTabla() {
             const tbody = document.getElementById("tabla");
             tbody.innerHTML = "";
-            
-            const totalPaginas = Math.ceil(registrosDiaFull.length / filasPorPagina) || 1;
+
+            const registrosFiltrados = obtenerRegistrosFiltrados();
+            const totalPaginas = Math.ceil(registrosFiltrados.length / filasPorPagina) || 1;
 
             if (paginaActual > totalPaginas) paginaActual = totalPaginas;
             if (paginaActual < 1) paginaActual = 1;
@@ -544,23 +677,37 @@
             const inicio = (paginaActual - 1) * filasPorPagina;
             const fin = inicio + filasPorPagina;
             
-            const filtrados = [...registrosDiaFull].reverse().slice(inicio, fin);
+            const filtrados = [...registrosFiltrados].reverse().slice(inicio, fin);
 
-            filtrados.forEach(row => {
-                tbody.innerHTML += `<tr>
-                    <td>${row[1]}</td>
-                    <td>${row[2]}</td>
-                    <td>${row[4]}</td>
-                    <td>${row[6]}</td>
-                    <td>${row[5]}</td>
-                    <td>${row[8]}</td>
-                    <td><b>${row[9]}</b></td>
-                </tr>`;
-            });
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; color: var(--text-label); padding:18px;">
+                            Sin registros para este filtro
+                        </td>
+                    </tr>
+                `;
+            } else {
+                filtrados.forEach(row => {
+                    tbody.innerHTML += `<tr>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                        <td>${row[4]}</td>
+                        <td>${row[6]}</td>
+                        <td>${row[5]}</td>
+                        <td>${row[8]}</td>
+                        <td><b>${row[9]}</b></td>
+                    </tr>`;
+                });
+            }
 
             document.getElementById("pageLabel").innerText = `${paginaActual} / ${totalPaginas}`;
             document.getElementById("btnPrev").disabled = paginaActual === 1;
             document.getElementById("btnNext").disabled = paginaActual === totalPaginas;
+
+            const total = registrosFiltrados.length;
+            document.getElementById("resumenFiltrosHistorial").innerText = 
+                `${total} registro${total === 1 ? "" : "s"} visible${total === 1 ? "" : "s"}`;
         }
 
         function cambiarPagina(dir) {
