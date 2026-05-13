@@ -8,13 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary-blue: #2563eb; --bg-body: #f1f5f9; }
-        body { background-color: var(--bg-body); padding: 10px; font-family: 'Segoe UI', system-ui, sans-serif; }
-        .card { border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: none; max-width: 600px; margin: auto; background: #fff; margin-bottom: 20px; }
+        body { background-color: var(--bg-body); padding: 10px; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none; max-width: 600px; margin: auto; background: #fff; margin-bottom: 20px; }
         .header-app { padding: 20px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-        .form-label { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; display: block; }
-        .form-control, .form-select { border-radius: 14px !important; padding: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; }
-        .btn-primary { border-radius: 18px; padding: 15px; font-weight: 800; background: var(--primary-blue); border: none; }
-        .table-responsive { font-size: 0.8rem; }
+        .form-control, .form-select { border-radius: 14px !important; padding: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; }
+        .btn-primary { border-radius: 18px; padding: 12px; font-weight: 800; background: var(--primary-blue); border: none; }
+        .table { font-size: 0.75rem; }
         .hidden { display: none; }
     </style>
 </head>
@@ -27,7 +26,6 @@
             <input type="text" id="nombreOperador" class="form-control mb-3" placeholder="Nombre operador">
             <input type="password" id="claveOperador" class="form-control mb-3" placeholder="Clave">
             <button class="btn btn-primary w-100" onclick="ingresarOperador()">INGRESAR</button>
-            <p id="msgLogin" class="text-danger mt-2 text-center"></p>
         </div>
     </div>
 
@@ -37,10 +35,10 @@
             <form id="form">
                 <input type="text" id="operador" class="form-control mb-3" readonly>
                 <div class="row g-2">
-                    <div class="col-6"><select id="exportadora" class="form-select mb-3"><option value="">Exportadora</option><option>Fruclem</option><option>SK Gyan</option><option>JHB</option><option>Talamaya</option></select></div>
-                    <div class="col-6"><select id="categoria" class="form-select mb-3"><option value="">Categoría</option><option>Premium</option><option>Extra</option><option>Fancy</option><option>Choice</option><option>Granel</option><option>CEM</option></select></div>
+                    <div class="col-6"><select id="exportadora" class="form-select mb-3"><option value="">Exportadora</option><option>Fruclem</option><option>SK Gyan</option><option>JHB</option></select></div>
+                    <div class="col-6"><select id="categoria" class="form-select mb-3"><option value="">Categoría</option><option>Premium</option><option>Extra</option><option>Fancy</option></select></div>
                 </div>
-                <select id="variedad" class="form-select mb-3"><option value="">Variedad</option><option>Royal Gala</option><option>Red Delicious</option><option>Granny</option><option>Fuji</option><option>Pink Lady</option></select>
+                <select id="variedad" class="form-select mb-3"><option value="">Variedad</option><option>Royal Gala</option><option>Granny</option><option>Fuji</option></select>
                 <div class="row g-2">
                     <div class="col-4"><select id="salida" class="form-select mb-3"><option value="">Salida</option></select></div>
                     <div class="col-4"><input type="text" id="calibre" class="form-control" placeholder="Calibre"></div>
@@ -54,62 +52,71 @@
 
     <div class="card" id="registrosCard">
         <div class="card-body">
-            <h5>Registros del día</h5>
+            <h5>Registros</h5>
             <div class="table-responsive">
-                <table class="table"><thead><tr><th>Hora</th><th>Var</th><th>Cal</th><th>Peso</th></tr></thead><tbody id="tabla"></tbody></table>
+                <table class="table"><thead><tr><th>Op</th><th>Sal</th><th>Var</th><th>Cal</th><th>Peso</th></tr></thead><tbody id="tabla"></tbody></table>
             </div>
-            <div id="estadoSync" class="text-muted small">Sincronizando...</div>
         </div>
     </div>
 
     <div class="card" id="graficoCard">
         <div class="card-body">
-            <h5>Seguimiento de pesos</h5>
-            <canvas id="graficoPesos" height="200"></canvas>
+            <h5>Gráfico de Pesos</h5>
+            <canvas id="graficoPesos"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    // --- TU LÓGICA ORIGINAL ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkKbW5dlOgY66tCeAHVo4Ceqlsn5aH6Thkticjhw8RfUhXtdI4wscqfliLFmlkLXIp/exec";
-    const salidaSelect = document.getElementById("salida");
-    for (let i = 1; i <= 41; i++) { let opt = document.createElement("option"); opt.value = i; opt.text = i; salidaSelect.appendChild(opt); }
-    
-    let operadorData = { operador: "" };
-    let grafico = null;
+    let miGrafico = null;
+
+    // Poblar salidas
+    const s = document.getElementById("salida");
+    for (let i = 1; i <= 41; i++) s.innerHTML += `<option value="${i}">${i}</option>`;
 
     function ingresarOperador() {
-        const n = document.getElementById("nombreOperador").value.trim();
-        if (document.getElementById("claveOperador").value.trim() === "fresh") {
-            operadorData.operador = n;
-            document.getElementById("operador").value = n;
+        if (document.getElementById("claveOperador").value === "fresh") {
+            document.getElementById("operador").value = document.getElementById("nombreOperador").value;
             document.getElementById("loginCard").classList.add("hidden");
             document.getElementById("formCard").classList.remove("hidden");
-        } else { document.getElementById("msgLogin").innerText = "Clave incorrecta"; }
+        }
     }
 
-    // Se mantiene la lógica de carga, guardado y gráfico igual que en tu versión anterior
-    // ... (El resto de funciones: cargarRegistros, actualizarGrafico, etc., se mantienen idénticas)
+    function cargarRegistros() {
+        fetch(SCRIPT_URL + "?t=" + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById("tabla");
+                tbody.innerHTML = "";
+                // Mostrar últimos 10
+                data.slice(-10).reverse().forEach(row => {
+                    tbody.innerHTML += `<tr><td>${row[2]}</td><td>${row[4]}</td><td>${row[7]}</td><td>${row[5]}</td><td>${row[9]}</td></tr>`;
+                });
+                
+                // Actualizar Gráfico
+                const ctx = document.getElementById('graficoPesos').getContext('2d');
+                if (miGrafico) miGrafico.destroy();
+                miGrafico = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.slice(-10).map(r => r[1]), // Hora
+                        datasets: [{ label: 'Peso (kg)', data: data.slice(-10).map(r => r[9]), borderColor: '#2563eb', tension: 0.1 }]
+                    }
+                });
+            });
+    }
 
-    document.getElementById("form").addEventListener("submit", function (e) {
+    document.getElementById("form").addEventListener("submit", (e) => {
         e.preventDefault();
-        const data = { operador: operadorData.operador, exportadora: document.getElementById("exportadora").value, salida: document.getElementById("salida").value, calibre: document.getElementById("calibre").value, categoria: document.getElementById("categoria").value, variedad: document.getElementById("variedad").value, lote: document.getElementById("lote").value, peso: document.getElementById("peso").value };
+        const fd = new FormData(document.getElementById("form"));
+        // Aquí debes mapear correctamente tus campos al objeto que espera tu servidor
+        const data = { operador: document.getElementById("operador").value, salida: document.getElementById("salida").value, variedad: document.getElementById("variedad").value, calibre: document.getElementById("calibre").value, peso: document.getElementById("peso").value };
         fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) }).then(() => {
             document.getElementById("peso").value = "";
             cargarRegistros();
         });
     });
-
-    function cargarRegistros() {
-        fetch(SCRIPT_URL + "?t=" + new Date().getTime()).then(res => res.json()).then(data => {
-            const tbody = document.getElementById("tabla");
-            tbody.innerHTML = "";
-            data.slice(-10).reverse().forEach(row => {
-                tbody.innerHTML += `<tr><td>${row[1]}</td><td>${row[7]}</td><td>${row[5]}</td><td>${row[9]}</td></tr>`;
-            });
-        });
-    }
 
     window.onload = cargarRegistros;
 </script>
