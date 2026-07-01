@@ -137,6 +137,16 @@
             transform: translateY(-1px); 
         }
 
+
+        .btn-tv {
+            background: #111827;
+            margin-top: 12px;
+        }
+
+        .btn-tv:hover {
+            opacity: 0.95;
+        }
+
         .collapsible-header {
             display: flex;
             justify-content: space-between;
@@ -418,7 +428,19 @@
             <input type="text" id="nombreOperador" placeholder="OPERADOR">
             <input type="password" id="claveOperador" placeholder="CLAVE">
             <button onclick="ingresarOperador()">Entrar</button>
+
+            <button type="button" class="btn-tv" onclick="abrirModoTV()">
+                📺 Entrar a Monitor
+            </button>
+
             <p id="msgLogin" style="color:red; font-size: 12px; text-align: center; margin-top: 10px;"></p>
+        </div>
+
+        <div class="card hidden" id="monitorCard">
+            <label>Monitor de Resultados</label>
+            <button type="button" class="btn-tv" onclick="abrirModoTV()">
+                📺 Entrar a Monitor
+            </button>
         </div>
 
         <div class="card hidden" id="objetivosCard">
@@ -695,6 +717,14 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjq7iM3-S1q9ZSJFiuYf3ZIPT5oDHl5eAOnUJCmycik_-5Oml72qx27_hhNVYlJNxl/exec";
+
+        // Archivo del monitor. Debe existir en el mismo repositorio/carpeta que este index.html.
+        // Si tu archivo del modo TV tiene otro nombre, cambia solo esta línea.
+        const TV_URL = "tv.html";
+
+        function abrirModoTV() {
+            window.open(TV_URL, "_blank");
+        }
         const salidaSelect = document.getElementById("salida");
         const filtroSalidaSelect = document.getElementById("filtroHistorialSalida");
         const editSalidaSelect = document.getElementById("editSalida");
@@ -1230,7 +1260,7 @@
 
                 document.getElementById("loginCard").classList.add("hidden");
 
-                ["formCard", "objetivosCard", "graficoCard", "registrosCard"].forEach(id => 
+                ["monitorCard", "formCard", "objetivosCard", "graficoCard", "registrosCard"].forEach(id => 
                     document.getElementById(id).classList.remove("hidden")
                 );
 
