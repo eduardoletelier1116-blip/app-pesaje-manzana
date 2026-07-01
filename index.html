@@ -166,7 +166,7 @@
         }
 
         .collapsible-content.open { 
-            max-height: 1000px; 
+            max-height: 2200px; 
             margin-top: 20px; 
         }
 
@@ -310,6 +310,131 @@
             text-align: center;
         }
 
+        .config-card {
+            padding: 14px 18px;
+        }
+
+        .config-card .collapsible-header {
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .config-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .config-gear {
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            background: #eef2f7;
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        .config-subtitle {
+            display: block;
+            font-size: 9px;
+            color: var(--text-label);
+            font-weight: 700;
+            margin-top: 2px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .config-section {
+            border-top: 1px solid #eef2f7;
+            padding-top: 18px;
+            margin-top: 18px;
+        }
+
+        .config-section:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .config-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+            padding-left: 5px;
+        }
+
+        .config-help {
+            font-size: 10px;
+            color: var(--text-label);
+            margin: -4px 0 12px;
+            padding-left: 5px;
+            line-height: 1.4;
+        }
+
+        .config-row-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-config-save {
+            background: #4caf50;
+        }
+
+        .btn-config-cancel {
+            background: #eef2f7;
+            color: var(--primary);
+        }
+
+        .config-mini-table td {
+            vertical-align: middle;
+        }
+
+        .config-name-cell {
+            white-space: normal;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .config-actions-cell {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .btn-mini {
+            width: auto;
+            height: 28px;
+            min-height: 28px;
+            padding: 0 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            letter-spacing: 0;
+            margin: 0 0 0 4px;
+        }
+
+        .btn-mini-edit {
+            background: #2a5298;
+        }
+
+        .btn-mini-delete {
+            background: #e74c3c;
+        }
+
+        .empty-config {
+            text-align: center;
+            color: var(--text-label);
+            font-size: 10px;
+            padding: 15px 8px;
+        }
+
         @media (max-width: 480px) {
             .container { 
                 padding: 0 12px; 
@@ -409,6 +534,21 @@
                 padding: 0 6px;
                 font-size: 8px;
             }
+
+            .config-card {
+                padding: 13px 14px;
+            }
+
+            .config-row-actions {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .config-gear {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -443,37 +583,77 @@
             </button>
         </div>
 
-        <div class="card hidden" id="objetivosCard">
+        <div class="card hidden config-card" id="objetivosCard">
             <div class="collapsible-header" onclick="toggleObjetivos()">
-                <span>⚙️ Configuración de Objetivos</span>
+                <span class="config-title">
+                    <span class="config-gear">⚙️</span>
+                    <span>
+                        Configuración
+                        <span class="config-subtitle">Objetivos y exportadoras</span>
+                    </span>
+                </span>
                 <span id="iconToggle">▼</span>
             </div>
 
             <div class="collapsible-content" id="contentObjetivos">
-                <div class="form-grid">
-                    <div>
-                        <label>Desde (Cal)</label>
-                        <input type="number" id="calibreDesde" placeholder="72">
+                <div class="config-section">
+                    <div class="config-section-title">Objetivos de peso</div>
+
+                    <div class="form-grid">
+                        <div>
+                            <label>Desde (Cal)</label>
+                            <input type="number" id="calibreDesde" placeholder="72">
+                        </div>
+
+                        <div>
+                            <label>Hasta (Cal)</label>
+                            <input type="number" id="calibreHasta" placeholder="125">
+                        </div>
                     </div>
 
-                    <div>
-                        <label>Hasta (Cal)</label>
-                        <input type="number" id="calibreHasta" placeholder="125">
+                    <label>Peso Objetivo (kg)</label>
+                    <input type="text" id="pesoObjetivo" placeholder="19.1">
+
+                    <button type="button" onclick="agregarReglaObjetivo()" class="btn-config-save" style="margin-bottom:15px;">
+                        Añadir regla
+                    </button>
+
+                    <div class="table-container" style="min-height: auto;">
+                        <table class="config-mini-table">
+                            <tbody id="tablaObjetivos"></tbody>
+                        </table>
+                    </div>
+
+                    <button class="hidden" type="button" onclick="limpiarObjetivos()" style="background:#e74c3c; margin-top:10px; padding:8px; font-size:10px;">
+                        Limpiar reglas
+                    </button>
+                </div>
+
+                <div class="config-section">
+                    <div class="config-section-title">Exportadoras</div>
+                    <div class="config-help">
+                        Agrega, edita o elimina exportadoras. Los cambios se aplican al registro y a la edición.
+                    </div>
+
+                    <label>Nombre exportadora</label>
+                    <input type="text" id="nuevaExportadora" placeholder="Ej: Nueva exportadora">
+
+                    <div class="config-row-actions">
+                        <button type="button" id="btnGuardarExportadora" class="btn-config-save" onclick="guardarExportadoraConfig()">
+                            Agregar exportadora
+                        </button>
+
+                        <button type="button" class="btn-config-cancel" onclick="cancelarEdicionExportadora()">
+                            Cancelar
+                        </button>
+                    </div>
+
+                    <div class="table-container" style="min-height: auto;">
+                        <table class="config-mini-table">
+                            <tbody id="tablaExportadoras"></tbody>
+                        </table>
                     </div>
                 </div>
-
-                <label>Peso Objetivo (kg)</label>
-                <input type="text" id="pesoObjetivo" placeholder="19.1">
-
-                <button onclick="agregarReglaObjetivo()" style="background:#4caf50; margin-bottom:15px;">Añadir Regla</button>
-                
-                <div class="table-container" style="min-height: auto;">
-                    <table>
-                        <tbody id="tablaObjetivos"></tbody>
-                    </table>
-                </div>
-
-                <button class="hidden" onclick="limpiarObjetivos()" style="background:#e74c3c; margin-top:10px; padding:8px; font-size:10px;">Limpiar Reglas</button>
             </div>
         </div>
 
@@ -733,6 +913,10 @@
         let grafico = null;
         let cargando = false;
         let reglasObjetivo = [];
+        const EXPORTADORAS_STORAGE_KEY = "freshpak_exportadoras_config";
+        const exportadorasBase = ["Fruclem", "SK Gyan", "JHB", "Talamaya"];
+        let exportadorasConfig = [];
+        let exportadoraEditandoIndex = null;
         
         let registrosDiaFull = [];
         let registrosPaginaActual = [];
@@ -755,6 +939,10 @@
             optionEdit.text = i;
             editSalidaSelect.appendChild(optionEdit);
         }
+
+        cargarExportadorasConfig();
+        renderSelectExportadoras();
+        renderTablaExportadoras();
 
         function toggleObjetivos() {
             const content = document.getElementById("contentObjetivos");
@@ -795,6 +983,197 @@
         function generarColor(index) {
             const colores = ["#1e3c72", "#2a5298", "#4caf50", "#ff9800", "#e91e63", "#00bcd4"];
             return colores[index % colores.length];
+        }
+
+
+        function limpiarTextoConfig(valor) {
+            return String(valor || "").trim().replace(/\s+/g, " ");
+        }
+
+        function cargarExportadorasConfig() {
+            try {
+                const guardadas = JSON.parse(localStorage.getItem(EXPORTADORAS_STORAGE_KEY) || "null");
+
+                if (Array.isArray(guardadas) && guardadas.length > 0) {
+                    exportadorasConfig = guardadas
+                        .map(limpiarTextoConfig)
+                        .filter(Boolean);
+                } else {
+                    exportadorasConfig = [...exportadorasBase];
+                }
+            } catch (error) {
+                exportadorasConfig = [...exportadorasBase];
+            }
+
+            normalizarExportadorasConfig();
+        }
+
+        function normalizarExportadorasConfig() {
+            const vistas = new Set();
+            exportadorasConfig = exportadorasConfig
+                .map(limpiarTextoConfig)
+                .filter(nombre => {
+                    const clave = nombre.toLowerCase();
+                    if (!nombre || vistas.has(clave)) return false;
+                    vistas.add(clave);
+                    return true;
+                });
+        }
+
+        function guardarExportadorasLocal() {
+            normalizarExportadorasConfig();
+            localStorage.setItem(
+                EXPORTADORAS_STORAGE_KEY,
+                JSON.stringify(exportadorasConfig)
+            );
+
+            renderSelectExportadoras();
+            renderTablaExportadoras();
+            actualizarGraficoDesdeFiltro();
+        }
+
+        function renderSelectExportadoras() {
+            const selects = [
+                document.getElementById("exportadora"),
+                document.getElementById("editExportadora")
+            ].filter(Boolean);
+
+            selects.forEach(select => {
+                const valorActual = select.value;
+                select.innerHTML = "";
+
+                const opcionBase = document.createElement("option");
+                opcionBase.value = "";
+                opcionBase.text = "Detectar...";
+                select.appendChild(opcionBase);
+
+                exportadorasConfig.forEach(nombre => {
+                    const option = document.createElement("option");
+                    option.value = nombre;
+                    option.text = nombre;
+                    select.appendChild(option);
+                });
+
+                if (valorActual && exportadorasConfig.includes(valorActual)) {
+                    select.value = valorActual;
+                } else {
+                    select.value = "";
+                }
+            });
+        }
+
+        function renderTablaExportadoras() {
+            const tbody = document.getElementById("tablaExportadoras");
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+
+            if (exportadorasConfig.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td class="empty-config" colspan="2">
+                            Sin exportadoras configuradas
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            exportadorasConfig.forEach((nombre, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="config-name-cell">${escaparHTML(nombre)}</td>
+                        <td class="config-actions-cell">
+                            <button type="button" class="btn-mini btn-mini-edit" onclick="editarExportadoraConfig(${index})">
+                                Editar
+                            </button>
+                            <button type="button" class="btn-mini btn-mini-delete" onclick="eliminarExportadoraConfig(${index})">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function guardarExportadoraConfig() {
+            const input = document.getElementById("nuevaExportadora");
+            const nombre = limpiarTextoConfig(input.value);
+
+            if (!nombre) {
+                alert("Ingresa el nombre de la exportadora.");
+                input.focus();
+                return;
+            }
+
+            const duplicada = exportadorasConfig.some((actual, index) =>
+                actual.toLowerCase() === nombre.toLowerCase() &&
+                index !== exportadoraEditandoIndex
+            );
+
+            if (duplicada) {
+                alert("Esa exportadora ya existe.");
+                input.focus();
+                return;
+            }
+
+            if (exportadoraEditandoIndex === null) {
+                exportadorasConfig.push(nombre);
+            } else {
+                exportadorasConfig[exportadoraEditandoIndex] = nombre;
+            }
+
+            input.value = "";
+            exportadoraEditandoIndex = null;
+            document.getElementById("btnGuardarExportadora").innerText = "Agregar exportadora";
+            guardarExportadorasLocal();
+        }
+
+        function editarExportadoraConfig(index) {
+            const nombre = exportadorasConfig[index];
+            if (!nombre) return;
+
+            exportadoraEditandoIndex = index;
+            document.getElementById("nuevaExportadora").value = nombre;
+            document.getElementById("btnGuardarExportadora").innerText = "Actualizar exportadora";
+            document.getElementById("nuevaExportadora").focus();
+        }
+
+        function cancelarEdicionExportadora() {
+            exportadoraEditandoIndex = null;
+            document.getElementById("nuevaExportadora").value = "";
+            document.getElementById("btnGuardarExportadora").innerText = "Agregar exportadora";
+        }
+
+        function eliminarExportadoraConfig(index) {
+            const nombre = exportadorasConfig[index];
+            if (!nombre) return;
+
+            const confirmar = confirm(`¿Eliminar la exportadora "${nombre}"?`);
+
+            if (!confirmar) return;
+
+            exportadorasConfig.splice(index, 1);
+
+            if (document.getElementById("exportadora").value === nombre) {
+                document.getElementById("exportadora").value = "";
+            }
+
+            if (document.getElementById("editExportadora").value === nombre) {
+                document.getElementById("editExportadora").value = "";
+            }
+
+            cancelarEdicionExportadora();
+            guardarExportadorasLocal();
+        }
+
+        function escaparHTML(valor) {
+            return String(valor ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         function obtenerRegistrosFiltrados() {
@@ -1264,6 +1643,9 @@
                     document.getElementById(id).classList.remove("hidden")
                 );
 
+                cargarExportadorasConfig();
+                renderSelectExportadoras();
+                renderTablaExportadoras();
                 cargarRegistros();
                 setInterval(cargarRegistros, 10000);
             } else {
